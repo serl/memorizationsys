@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -16,12 +15,10 @@ import (
 	_ "github.com/lib/pq"
 	"googlemaps.github.io/maps"
 	"gopkg.in/telegram-bot-api.v4"
-	"rsc.io/letsencrypt"
 )
 
 var (
 	SecretsPath          string
-	LetsencryptCachePath string
 	Hostname             string
 
 	DB *sqlx.DB
@@ -101,11 +98,10 @@ func createHandler() http.Handler {
 
 func main() {
 	flag.StringVar(&SecretsPath, "secrets", "", "Path to secrets file")
-	flag.StringVar(&LetsencryptCachePath, "letsencrypt-cache", "", "Path to Let's Encrypt cache file")
 	flag.StringVar(&Hostname, "hostname", "", "Hostname to register webhook with")
 	flag.Parse()
 
-	if SecretsPath == "" || LetsencryptCachePath == "" || Hostname == "" {
+	if SecretsPath == "" || Hostname == "" {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
@@ -114,26 +110,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var m letsencrypt.Manager
-	if err := m.CacheFile(LetsencryptCachePath); err != nil {
-		log.Fatal(err)
-	}
-
 	httpServer := &http.Server{
-		Addr:    ":8080",
-		Handler: http.HandlerFunc(letsencrypt.RedirectHTTP),
-	}
-
-	httpsServer := &http.Server{
-		Addr:    ":8443",
+		Addr:    ":80",
 		Handler: createHandler(),
-		TLSConfig: &tls.Config{
-			GetCertificate: m.GetCertificate,
-		},
 	}
 
 	go Poller()
-	if err := gracehttp.Serve(httpServer, httpsServer); err != nil {
+	if err := gracehttp.Serve(httpServer); err != nil {
 		log.Fatal(err)
 	}
 }
