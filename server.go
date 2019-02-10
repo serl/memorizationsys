@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -18,7 +16,6 @@ import (
 )
 
 var (
-	SecretsPath          string
 	Hostname             string
 
 	DB *sqlx.DB
@@ -39,15 +36,13 @@ func Send(c tgbotapi.Chattable) (tgbotapi.Message, error) {
 }
 
 func readSecrets() error {
-	secretsFile, err := os.Open(SecretsPath)
-	if err != nil {
-		return err
-	}
-	decoder := json.NewDecoder(secretsFile)
-	err = decoder.Decode(&Secrets)
-	if err != nil {
-		return err
-	}
+	var err error
+
+	Secrets.SentryDSN = os.Getenv("SENTRY_DSN")
+	Secrets.BotToken = os.Getenv("BOT_TOKEN")
+	Secrets.MapsAPIKey = os.Getenv("MAPS_API_KEY")
+	Secrets.PostgresConnectionString = os.Getenv("DATABASE_URL")
+
 	if Secrets.SentryDSN != "" {
 		raven.SetDSN(Secrets.SentryDSN)
 	}
@@ -83,9 +78,11 @@ func createHandler() http.Handler {
 	mux.HandleFunc("/telegram/register_webhook/"+Secrets.BotToken, func(w http.ResponseWriter, r *http.Request) {
 		_, err := BotAPI.SetWebhook(tgbotapi.NewWebhook(fmt.Sprintf("https://%s/telegram/webhook/%s", Hostname, Secrets.BotToken)))
 		if err == nil {
+			log.Println("Webhook set!")
 			http.Error(w, http.StatusText(http.StatusOK), http.StatusOK)
 		} else {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Println(err)
 		}
 	})
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -97,25 +94,19 @@ func createHandler() http.Handler {
 }
 
 func main() {
-	flag.StringVar(&SecretsPath, "secrets", "", "Path to secrets file")
-	flag.StringVar(&Hostname, "hostname", "", "Hostname to register webhook with")
-	flag.Parse()
-
-	if SecretsPath == "" || Hostname == "" {
-		flag.PrintDefaults()
-		os.Exit(1)
-	}
+	Hostname = os.Getenv("HOSTNAME")
 
 	if err := readSecrets(); err != nil {
 		log.Fatal(err)
 	}
 
 	httpServer := &http.Server{
-		Addr:    ":80",
+		Addr:    ":" + os.Getenv("PORT"),
 		Handler: createHandler(),
 	}
 
 	go Poller()
+	log.Println("Starting HTTP Server on port " + os.Getenv("PORT"))
 	if err := gracehttp.Serve(httpServer); err != nil {
 		log.Fatal(err)
 	}
