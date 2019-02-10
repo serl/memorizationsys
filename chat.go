@@ -307,7 +307,7 @@ func HandleMessage(msg *tgbotapi.Message) {
 			var tzId, tzName string
 			var err error
 			if msg.Location == nil {
-				location, err := time.LoadLocation(msg.Text)
+				_, err := time.LoadLocation(msg.Text)
 				if err != nil {
 					msg := createReply("Please send me your location.")
 					msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(

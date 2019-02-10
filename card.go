@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/bouk/memorizationbot/sm"
+	"./sm"
 	"github.com/jmoiron/sqlx"
 	"github.com/jmoiron/sqlx/types"
 )
