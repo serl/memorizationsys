@@ -88,7 +88,9 @@ func createHandler() http.Handler {
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(Site))
+		if os.Getenv("NO_SITE") == "" {
+			w.Write([]byte(Site))
+		}
 	})
 	return mux
 }
