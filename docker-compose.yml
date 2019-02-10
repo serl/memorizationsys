@@ -1,0 +1,19 @@
+version: "2"
+
+services:
+  bot:
+    build: .
+    restart: on-failure
+    env_file: .env
+    environment:
+      PORT: "8000"
+      DATABASE_URL: "postgres://postgres:memsys@db/postgres?sslmode=disable"
+    ports:
+      - "8000:8000"
+
+  db:
+    image: postgres:11
+    environment:
+      POSTGRES_PASSWORD: memsys
+    volumes:
+      - "./server:/docker-entrypoint-initdb.d:ro"
