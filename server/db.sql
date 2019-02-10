@@ -40,7 +40,8 @@ CREATE TABLE cards (
  repetition SMALLINT NOT NULL DEFAULT 1 CHECK (repetition >= 1),
  repetition_today SMALLINT NOT NULL DEFAULT 0 CHECK (repetition_today >= 0),
  random_order INTEGER NOT NULL DEFAULT TRUNC(RANDOM() * 2147483647)::INTEGER,
- next_repetition DATE NOT NULL DEFAULT (CURRENT_DATE - 7)
+ next_repetition DATE NOT NULL DEFAULT (CURRENT_DATE - 7),
+ UNIQUE (deck_id, front)
 );
 CREATE INDEX ON cards (deck_id, next_repetition ASC, repetition ASC);
 
