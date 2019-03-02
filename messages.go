@@ -51,7 +51,3 @@ var (
 		),
 	)
 )
-
-func init() {
-	CardReplyKeyboard.OneTimeKeyboard = true
-}

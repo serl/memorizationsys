@@ -86,7 +86,7 @@ func (s State) Show(c *Context) error {
 	u := c.u
 	tx := c.tx
 	reply := c.reply
-	createReply := c.createReply
+	noKeyboard := tgbotapi.NewRemoveKeyboard(false)
 	data := c.data
 
 	switch s {
@@ -95,7 +95,6 @@ func (s State) Show(c *Context) error {
 		if err != nil {
 			return err
 		}
-		var replyMessage tgbotapi.MessageConfig
 
 		keyboard := tgbotapi.NewReplyKeyboard(
 			tgbotapi.NewKeyboardButtonRow(
@@ -106,18 +105,18 @@ func (s State) Show(c *Context) error {
 		)
 
 		if len(decks) == 0 {
-			replyMessage = createReply("You're now ready to create your first deck, so press '%s' to get started.", AddDeck)
+			reply(
+				fmt.Sprintf("You're now ready to create your first deck, so press '%s' to get started.", AddDeck),
+				keyboard,
+			)
 		} else {
 			for _, deck := range decks {
 				keyboard.Keyboard = append(keyboard.Keyboard, tgbotapi.NewKeyboardButtonRow(
 					tgbotapi.NewKeyboardButton(deck.Name),
 				))
 			}
-			replyMessage = createReply("Select the deck you want to work on.")
+			reply("Select the deck you want to work on.", keyboard)
 		}
-		keyboard.OneTimeKeyboard = true
-		replyMessage.ReplyMarkup = keyboard
-		Send(replyMessage)
 	case Rehearsing:
 		card, err := u.GetScheduledCard(tx)
 		if err != nil {
@@ -125,7 +124,7 @@ func (s State) Show(c *Context) error {
 		}
 
 		if card == nil {
-			reply("Done with rehearsal for today!")
+			reply("Done with rehearsal for today!", nil)
 			return u.SetAndShowState(c, DeckList, nil)
 		} else {
 			keyboard := tgbotapi.NewReplyKeyboard(
@@ -137,7 +136,6 @@ func (s State) Show(c *Context) error {
 					tgbotapi.NewKeyboardButton(ShowReverseOfCard),
 				),
 			)
-			keyboard.OneTimeKeyboard = true
 			card.SendFront(u.ID, keyboard)
 			return nil
 		}
@@ -153,20 +151,18 @@ func (s State) Show(c *Context) error {
 				tgbotapi.NewKeyboardButton(AddCard),
 			),
 		)
-		keyboard.OneTimeKeyboard = true
 
 		if totalCards == 0 {
-			msg := createReply("You currently have no cards, so press '%s' to create one.", AddCard)
-			msg.ReplyMarkup = keyboard
-			Send(msg)
+			reply(
+				fmt.Sprintf("You currently have no cards, so press '%s' to create one.", AddCard),
+				keyboard,
+			)
 			return nil
 		} else if cardsLeft == 0 {
-			msg := createReply("No more cards to review today.")
-			msg.ReplyMarkup = keyboard
-			Send(msg)
+			reply("No more cards to review today.", keyboard)
 			return nil
 		} else {
-			reply("%d/%d cards left to rehearse in '%s'", cardsLeft, totalCards, deck.Name)
+			reply(fmt.Sprintf("%d/%d cards left to rehearse in '%s'", cardsLeft, totalCards, deck.Name), nil)
 
 			card, err := deck.GetCardForReview(c)
 			if err != nil {
@@ -184,40 +180,39 @@ func (s State) Show(c *Context) error {
 			return nil
 		}
 	case CardCreate:
-		reply("Please send a message to use for the front.")
+		reply("Please send a message to use for the front.", noKeyboard)
 	case CardCreateBack:
-		reply("Please send a message to use for the back.")
+		reply("Please send a message to use for the back.", noKeyboard)
 	case CardEdit:
-		msg := createReply("What would you like to do?")
-		keyboard := tgbotapi.NewReplyKeyboard(
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton(Back),
-				tgbotapi.NewKeyboardButton(DeleteCard),
-			),
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton(EditCardFront),
-				tgbotapi.NewKeyboardButton(EditCardBack),
+		reply(
+			"What would you like to do?",
+			tgbotapi.NewReplyKeyboard(
+				tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButton(Back),
+					tgbotapi.NewKeyboardButton(DeleteCard),
+				),
+				tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButton(EditCardFront),
+					tgbotapi.NewKeyboardButton(EditCardBack),
+				),
 			),
 		)
-		keyboard.OneTimeKeyboard = true
-		msg.ReplyMarkup = keyboard
-		Send(msg)
 	case CardEditFront:
 		card, err := GetCard(tx, data.CardID)
 		if err != nil {
 			return err
 		}
-		reply("I'm now going to send you the front, please send me back what you want to replace it with.")
+		reply("I'm now going to send you the front, please send me back what you want to replace it with.", noKeyboard)
 		return card.SendFront(u.ID, nil)
 	case CardEditBack:
 		card, err := GetCard(tx, data.CardID)
 		if err != nil {
 			return err
 		}
-		reply("I'm now going to send you the back, please send me back what you want to replace it with.")
+		reply("I'm now going to send you the back, please send me back what you want to replace it with.", noKeyboard)
 		return card.SendBack(u.ID, nil)
 	case DeckCreate:
-		reply("What's the name of the new deck?")
+		reply("What's the name of the new deck?", noKeyboard)
 	case RehearsingCardReview:
 		card, err := u.GetScheduledCard(tx)
 		if err != nil {
@@ -237,101 +232,100 @@ func (s State) Show(c *Context) error {
 		card.SendBack(int(c.from), CardReplyKeyboard)
 		return nil
 	case SetTimeZone:
-		msg := createReply("Please send me your location, so I can determine your time zone! 🌍")
-		msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButtonLocation("Send location"),
+		reply(
+			"Please send me your location, so I can determine your time zone! 🌍",
+			tgbotapi.NewReplyKeyboard(
+				tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButtonLocation("Send location"),
+				),
 			),
 		)
-		Send(msg)
 		return nil
 	case DeckDelete:
 		_, totalCards, _, err := u.GetDeckWithStats(tx, data.DeckID)
 		if err != nil {
 			return err
 		}
-		msg := createReply("Are you sure? You will also delete %d cards.", totalCards)
-		msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton(DontDeleteDeck),
-			),
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton(ConfirmDeleteDeck),
+		reply(
+			fmt.Sprintf("Are you sure? You will also delete %d cards.", totalCards),
+			tgbotapi.NewReplyKeyboard(
+				tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButton(DontDeleteDeck),
+				),
+				tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButton(ConfirmDeleteDeck),
+				),
 			),
 		)
-		Send(msg)
 		return nil
 	case DeckEdit:
 		deck, err := u.GetDeck(tx, data.DeckID)
 		if err != nil {
 			return err
 		}
-
-		msg := createReply("What do you want to do with '%s'?", deck.Name)
-		keyboard := tgbotapi.NewReplyKeyboard(
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton(Back),
-				tgbotapi.NewKeyboardButton(DeleteDeck),
-			),
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton(stringTernary(deck.Scheduled, DisableScheduling, EnableScheduling)),
-				tgbotapi.NewKeyboardButton(EditName),
+		reply(
+			fmt.Sprintf("What do you want to do with '%s'?", deck.Name),
+			tgbotapi.NewReplyKeyboard(
+				tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButton(Back),
+					tgbotapi.NewKeyboardButton(DeleteDeck),
+				),
+				tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButton(stringTernary(deck.Scheduled, DisableScheduling, EnableScheduling)),
+					tgbotapi.NewKeyboardButton(EditName),
+				),
 			),
 		)
-		keyboard.OneTimeKeyboard = true
-		msg.ReplyMarkup = keyboard
-		Send(msg)
 		return nil
 	case DeckNameEdit:
 		deck, err := u.GetDeck(tx, data.DeckID)
 		if err != nil {
 			return err
 		}
-		reply("Please type in the new name for '%s'", deck.Name)
+		reply(fmt.Sprintf("Please type in the new name for '%s'", deck.Name), noKeyboard)
 		return nil
 	case Settings:
-		msg := createReply("What setting do you want to change?")
-		keyboard := tgbotapi.NewReplyKeyboard(
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton(Back),
-			),
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton(fmt.Sprintf(ChangeLocationFormat, u.TimeZone)),
-			),
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton(fmt.Sprintf(ChangeTimeToRehearseFormat, u.RehearsalTime.Format(TimeFormat))),
-			),
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton(stringTernary(u.Scheduled, DisableScheduling, EnableScheduling)),
+		reply(
+			"What setting do you want to change?",
+			tgbotapi.NewReplyKeyboard(
+				tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButton(Back),
+				),
+				tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButton(fmt.Sprintf(ChangeLocationFormat, u.TimeZone)),
+				),
+				tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButton(fmt.Sprintf(ChangeTimeToRehearseFormat, u.RehearsalTime.Format(TimeFormat))),
+				),
+				tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButton(stringTernary(u.Scheduled, DisableScheduling, EnableScheduling)),
+				),
 			),
 		)
-
-		keyboard.OneTimeKeyboard = true
-		msg.ReplyMarkup = keyboard
-		Send(msg)
 		return nil
 	case UserSetup:
-		reply("Hi there!")
+		reply("Hi there!", nil)
 		time.Sleep(time.Second)
 		HelpUser(int64(u.ID))
-		msg := createReply("Now, to get started please send me your location, so I can determine your time zone! 🌍")
-		msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButtonLocation("Send location"),
+		reply(
+			"Now, to get started please send me your location, so I can determine your time zone! 🌍",
+			tgbotapi.NewReplyKeyboard(
+				tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButtonLocation("Send location"),
+				),
 			),
 		)
-		Send(msg)
 	case SetRehearsalTime:
-		msg := createReply("Please select your preferred time of day to rehearse. You can also type out the time yourself.")
 		keyboard := tgbotapi.NewReplyKeyboard()
 		for i := 0; i < 18; i++ {
 			keyboard.Keyboard = append(keyboard.Keyboard, tgbotapi.NewKeyboardButtonRow(
 				tgbotapi.NewKeyboardButton(time.Date(2000, time.January, 1, 5+i, 0, 0, 0, time.UTC).Format(TimeFormat)),
 			))
 		}
-		keyboard.OneTimeKeyboard = true
-		msg.ReplyMarkup = keyboard
-		Send(msg)
+		reply(
+			"Please select your preferred time of day to rehearse. You can also type out the time yourself.",
+			keyboard,
+		)
 	}
 	return nil
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -28,7 +29,7 @@ func HandleMessage(msg *tgbotapi.Message) {
 		}
 
 		reply := c.reply
-		createReply := c.createReply
+		noKeyboard := tgbotapi.NewRemoveKeyboard(false)
 		if strings.HasPrefix(msg.Text, "/decks") {
 			return u.SetAndShowState(c, DeckList, nil)
 		} else if strings.HasPrefix(msg.Text, "/help") {
@@ -62,7 +63,7 @@ func HandleMessage(msg *tgbotapi.Message) {
 		case DeckCreate:
 			name := strings.TrimSpace(strings.Replace(msg.Text, "\n", " ", -1))
 			if len(name) < 1 {
-				reply("Please supply a name for the new deck")
+				reply("Please supply a name for the new deck", noKeyboard)
 				return nil
 			} else {
 				has, err := u.HasDeckWithName(tx, name)
@@ -71,14 +72,14 @@ func HandleMessage(msg *tgbotapi.Message) {
 				}
 
 				if has {
-					reply("Name already taken")
+					reply("Name already taken", nil)
 					return nil
 				} else {
 					deck, err := u.CreateDeck(tx, name)
 					if err != nil {
 						return err
 					}
-					reply("Deck '%s' has been created!", name)
+					reply(fmt.Sprintf("Deck '%s' has been created!", name), nil)
 					return u.SetAndShowState(c, DeckDetails, &Data{DeckID: deck.ID})
 				}
 			}
@@ -164,10 +165,10 @@ func HandleMessage(msg *tgbotapi.Message) {
 				if err != nil {
 					return err
 				}
-				reply("Name changed to '%s'", name)
+				reply(fmt.Sprintf("Name changed to '%s'", name), nil)
 				return u.SetAndShowState(c, DeckDetails, &data)
 			} else {
-				reply("Name already used")
+				reply("Name already used", nil)
 				return nil
 			}
 		case DeckDelete:
@@ -183,7 +184,7 @@ func HandleMessage(msg *tgbotapi.Message) {
 				if err != nil {
 					return err
 				}
-				reply("'%s' and %d cards have been deleted", deck.Name, totalCards)
+				reply(fmt.Sprintf("'%s' and %d cards have been deleted", deck.Name, totalCards), nil)
 				return u.SetAndShowState(c, DeckList, nil)
 			default:
 				return DeckDelete.Show(c)
@@ -202,7 +203,7 @@ func HandleMessage(msg *tgbotapi.Message) {
 			if err != nil {
 				return err
 			}
-			reply("Card created")
+			reply("Card created", nil)
 			return u.SetAndShowState(c, DeckDetails, &Data{DeckID: data.DeckID})
 		case CardEdit:
 			card, err := GetCard(tx, data.CardID)
@@ -233,7 +234,7 @@ func HandleMessage(msg *tgbotapi.Message) {
 			if err = card.SetFront(tx, processMessage(msg, nil)); err != nil {
 				return err
 			}
-			reply("Card updated")
+			reply("Card updated", nil)
 			return u.SetAndShowState(c, DeckDetails, &Data{DeckID: card.DeckID})
 		case CardEditBack:
 			card, err := GetCard(tx, data.CardID)
@@ -243,7 +244,7 @@ func HandleMessage(msg *tgbotapi.Message) {
 			if err = card.SetBack(tx, processMessage(msg, nil)); err != nil {
 				return err
 			}
-			reply("Card updated")
+			reply("Card updated", nil)
 			return u.SetAndShowState(c, DeckDetails, &Data{DeckID: card.DeckID})
 		case RehearsingCardReview:
 			card, err := u.GetScheduledCard(tx)
@@ -254,16 +255,12 @@ func HandleMessage(msg *tgbotapi.Message) {
 			case EditCard:
 				return u.SetAndShowState(c, CardEdit, &Data{CardID: card.ID})
 			case Difficulty0:
-				reply("Too bad!")
 				err = card.Respond(c, 0)
 			case Difficulty1:
-				reply("You'll get it right next time!")
 				err = card.Respond(c, 1)
 			case Difficulty2:
-				reply("👍 All right!")
 				err = card.Respond(c, 2)
 			case Difficulty3:
-				reply("💯")
 				err = card.Respond(c, 3)
 			default:
 				return RehearsingCardReview.Show(c)
@@ -291,16 +288,12 @@ func HandleMessage(msg *tgbotapi.Message) {
 			case EditCard:
 				return u.SetAndShowState(c, CardEdit, &Data{CardID: card.ID})
 			case Difficulty0:
-				reply("Too bad!")
 				err = card.Respond(c, 0)
 			case Difficulty1:
-				reply("Not bad!")
 				err = card.Respond(c, 1)
 			case Difficulty2:
-				reply("All right!")
 				err = card.Respond(c, 2)
 			case Difficulty3:
-				reply("💯")
 				err = card.Respond(c, 3)
 			default:
 				return CardReview.Show(c)
@@ -317,13 +310,14 @@ func HandleMessage(msg *tgbotapi.Message) {
 			if msg.Location == nil {
 				_, err := time.LoadLocation(msg.Text)
 				if err != nil {
-					msg := createReply("Please send me your location.")
-					msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
-						tgbotapi.NewKeyboardButtonRow(
-							tgbotapi.NewKeyboardButtonLocation("All right!"),
+					reply(
+						"Please send me your location.",
+						tgbotapi.NewReplyKeyboard(
+							tgbotapi.NewKeyboardButtonRow(
+								tgbotapi.NewKeyboardButtonLocation("All right!"),
+							),
 						),
 					)
-					Send(msg)
 					return nil
 				}
 			} else {
@@ -336,7 +330,7 @@ func HandleMessage(msg *tgbotapi.Message) {
 			if err != nil {
 				return err
 			}
-			reply("Got it! You're in the '%s' time zone.", tzName)
+			reply(fmt.Sprintf("Got it! You're in the '%s' time zone.", tzName), nil)
 			return u.SetAndShowState(c, DeckList, nil)
 
 		case Settings:
@@ -345,13 +339,13 @@ func HandleMessage(msg *tgbotapi.Message) {
 			} else if strings.HasPrefix(msg.Text, ChangeTimeToRehearse) {
 				return u.SetAndShowState(c, SetRehearsalTime, nil)
 			} else if msg.Text == EnableScheduling {
-				reply("Automatic rehearsing enabled")
+				reply("Automatic rehearsing enabled", nil)
 				if err := u.SetScheduled(tx, true); err != nil {
 					return err
 				}
 				return Settings.Show(c)
 			} else if msg.Text == DisableScheduling {
-				reply("Automatic rehearsing disabled")
+				reply("Automatic rehearsing disabled", nil)
 				if err := u.SetScheduled(tx, false); err != nil {
 					return err
 				}
@@ -361,13 +355,14 @@ func HandleMessage(msg *tgbotapi.Message) {
 			}
 		case UserSetup:
 			if msg.Location == nil {
-				msg := createReply("Please send me your location.")
-				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
-					tgbotapi.NewKeyboardButtonRow(
-						tgbotapi.NewKeyboardButtonLocation("All right!"),
+				reply(
+					"Please send me your location.",
+					tgbotapi.NewReplyKeyboard(
+						tgbotapi.NewKeyboardButtonRow(
+							tgbotapi.NewKeyboardButtonLocation("All right!"),
+						),
 					),
 				)
-				Send(msg)
 				return nil
 			} else {
 				tzId, tzName, err := getTimezone(msg.Location)
@@ -378,12 +373,12 @@ func HandleMessage(msg *tgbotapi.Message) {
 				if err != nil {
 					return err
 				}
-				reply("Got it! You're in the '%s' time zone.", tzName)
+				reply(fmt.Sprintf("Got it! You're in the '%s' time zone.", tzName), nil)
 				err = u.SetScheduled(tx, true)
 				if err != nil {
 					return err
 				}
-				reply("Every day at noon you will get sent your flash cards if there's any that need rehearsing. You can change the time of rehearsal in your /settings.")
+				reply("Every day at noon you will get sent your flash cards if there's any that need rehearsing. You can change the time of rehearsal in your /settings.", nil)
 				return u.SetAndShowState(c, DeckList, nil)
 			}
 		case SetRehearsalTime:
@@ -393,13 +388,13 @@ func HandleMessage(msg *tgbotapi.Message) {
 				if err != nil {
 					return err
 				}
-				reply("Rehearsal time changed to '%s'", t.Format(TimeFormat))
+				reply(fmt.Sprintf("Rehearsal time changed to '%s'", t.Format(TimeFormat)), nil)
 			} else {
-				reply("I don't understand what you mean, please try again.")
+				reply("I don't understand what you mean, please try again.", nil)
 			}
 			return u.SetAndShowState(c, Settings, nil)
 		default:
-			c.reply("You're in a weird state")
+			reply("You're in a weird state", noKeyboard)
 			return nil
 		}
 	}); err != nil {

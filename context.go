@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/jmoiron/sqlx"
 	"gopkg.in/telegram-bot-api.v4"
 )
@@ -14,9 +12,10 @@ type Context struct {
 	from int64
 }
 
-func (c *Context) createReply(format string, data ...interface{}) tgbotapi.MessageConfig {
-	return tgbotapi.NewMessage(c.from, fmt.Sprintf(format, data...))
-}
-func (c *Context) reply(format string, data ...interface{}) (tgbotapi.Message, error) {
-	return Send(c.createReply(format, data...))
+func (c *Context) reply(message string, replyMarkup interface{}) (tgbotapi.Message, error) {
+	msg := tgbotapi.NewMessage(c.from, message)
+	if replyMarkup != nil {
+		msg.ReplyMarkup = replyMarkup;
+	}
+	return Send(msg)
 }

@@ -53,7 +53,6 @@ func poll() (bool, error) {
 				tgbotapi.NewKeyboardButton(ShowReverseOfCard),
 			),
 		)
-		keyboard.OneTimeKeyboard = true
 
 		go func() {
 			Send(tgbotapi.NewMessage(int64(userID), "Time for your rehearsal!"))
