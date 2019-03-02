@@ -38,6 +38,10 @@ const (
 var (
 	CardReplyKeyboard = tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(Back),
+			tgbotapi.NewKeyboardButton(EditCard),
+		),
+		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton(Difficulty0),
 			tgbotapi.NewKeyboardButton(Difficulty1),
 		),

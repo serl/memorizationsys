@@ -249,6 +249,10 @@ func HandleMessage(msg *tgbotapi.Message) {
 			card, err := u.GetScheduledCard(tx)
 
 			switch msg.Text {
+			case Back:
+				return u.SetAndShowState(c, DeckDetails, &Data{DeckID: card.DeckID})
+			case EditCard:
+				return u.SetAndShowState(c, CardEdit, &Data{CardID: card.ID})
 			case Difficulty0:
 				reply("Too bad!")
 				err = card.Respond(c, 0)
@@ -282,6 +286,10 @@ func HandleMessage(msg *tgbotapi.Message) {
 			}
 
 			switch msg.Text {
+			case Back:
+				return u.SetAndShowState(c, DeckDetails, &Data{DeckID: card.DeckID})
+			case EditCard:
+				return u.SetAndShowState(c, CardEdit, &Data{CardID: card.ID})
 			case Difficulty0:
 				reply("Too bad!")
 				err = card.Respond(c, 0)
