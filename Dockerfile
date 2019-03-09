@@ -16,9 +16,21 @@ WORKDIR /go
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o main .
 
-FROM scratch
+
+FROM scratch as skinny
+
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/main /app/
 WORKDIR /app
 ENTRYPOINT ["./main"]
 CMD ["bot"]
+
+
+FROM alpine
+
+RUN apk add --no-cache curl
+
+COPY --from=builder /go/main /usr/local/bin
+COPY webhook-dog.sh /usr/local/bin
+
+CMD ["main"]

@@ -1,0 +1,14 @@
+setup:
+  addons:
+    - plan: heroku-postgresql
+  config:
+    NO_SITE: DEFINITELY
+build:
+  docker:
+    web: Dockerfile
+run:
+  web: main
+  webhook-dog:
+    command:
+      - webhook-dog.sh
+    image: web
