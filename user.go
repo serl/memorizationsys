@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"log"
 	"time"
+	"errors"
+	"os"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/jmoiron/sqlx/types"
@@ -145,6 +147,9 @@ func WithUser(ID int, f func(*User, *sqlx.Tx) error) error {
 	var user User
 	err = tx.Get(&user, "SELECT * FROM users WHERE id=$1 FOR UPDATE", ID)
 	if err == sql.ErrNoRows {
+		if os.Getenv("NO_NEW_USERS") != "" {
+			return errors.New("Not accepting new users :(")
+		}
 		_, err = tx.Exec("INSERT INTO users (id, state) VALUES ($1, $2) ON CONFLICT DO NOTHING", ID, DeckList)
 		if err != nil {
 			return err
