@@ -1,7 +1,9 @@
-# Memorization Bot
+# MemorizationSys
 
-Spaced repetition system bot for Telegram.
-Fork of [Memorization Bot](https://memorizationbot.com/).
+Spaced repetition system bot for Telegram `@memorizationsys_bot`.
+[Fork](https://github.com/bouk/memorizationbot) of [Memorization Bot](https://memorizationbot.com/).
+
+> TODO: write why this one is WAY superior than the original.
 
 ## Host locally with `docker-compose`
 
