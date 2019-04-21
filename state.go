@@ -158,11 +158,11 @@ func (s State) Show(c *Context) error {
 				keyboard,
 			)
 			return nil
-		} else if cardsLeft == 0 {
-			reply("No more cards to review today.", keyboard)
-			return nil
 		} else {
-			reply(fmt.Sprintf("%d/%d cards left to rehearse in '%s'", cardsLeft, totalCards, deck.Name), nil)
+			reply(fmt.Sprintf("%d/%d cards left to rehearse in '%s'", cardsLeft, totalCards, deck.Name), keyboard)
+			if cardsLeft == 0 {
+				return nil
+			}
 
 			card, err := deck.GetCardForReview(c)
 			if err != nil {
