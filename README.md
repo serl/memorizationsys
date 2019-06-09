@@ -17,6 +17,7 @@ Exposing the HTTP server as-is to the Telegram servers will NOT work.
 * `docker-compose up`.
 * You'll have your bot server listening on port 8000.
 * Register the webhook to activate the bot by visiting `http://localhost:8000/telegram/register_webhook/$BOT_TOKEN`.
+* Access the database with `docker-compose exec db psql -U postgres`.
 
 ## Host on Heroku
 
@@ -24,3 +25,19 @@ Exposing the HTTP server as-is to the Telegram servers will NOT work.
 * Initialize the database: `{ cat server/db.sql; cat server/functions.sql; } | heroku pg:psql`
 * Take a look at `.env.sample` and do your `heroku config:set` accordingly.
 * Register the webhook to activate the bot by running `heroku run webhook-dog`. You can use the scheduler add-on to run it every morning. It will wake up the bot, so that you'll have your rehearsal, even with free dynos.
+
+### Working with Postgres on Heroku
+
+You can download a copy of the remote database with:
+
+```sh
+cd server
+heroku pg:backups:capture
+heroku pg:backups:download
+```
+
+Then import locally with:
+
+```sh
+docker-compose exec db pg_restore --verbose --clean --no-acl --no-owner -h localhost -U postgres -d postgres /docker-entrypoint-initdb.d/latest.dump
+```
