@@ -29,9 +29,9 @@ type Card struct {
 	UpdatedAt      time.Time `db:"updated_at"`
 }
 
-func GetCard(tx *sqlx.Tx, id int) (*Card, error) {
+func GetCard(tx *sqlx.Tx, id int, userID int) (*Card, error) {
 	var card Card
-	err := tx.Get(&card, "SELECT * FROM cards WHERE id=$1", id)
+	err := tx.Get(&card, "SELECT cards.* FROM cards JOIN decks ON (cards.deck_id = decks.id) WHERE cards.id=$1 AND decks.user_id=$2", id, userID)
 	return &card, err
 }
 

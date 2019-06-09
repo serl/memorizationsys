@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"gopkg.in/telegram-bot-api.v4"
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
 type Data struct {
@@ -198,14 +198,14 @@ func (s State) Show(c *Context) error {
 			),
 		)
 	case CardEditFront:
-		card, err := GetCard(tx, data.CardID)
+		card, err := GetCard(tx, data.CardID, u.ID)
 		if err != nil {
 			return err
 		}
 		reply("I'm now going to send you the front, please send me back what you want to replace it with.", noKeyboard)
 		return card.SendFront(u.ID, nil)
 	case CardEditBack:
-		card, err := GetCard(tx, data.CardID)
+		card, err := GetCard(tx, data.CardID, u.ID)
 		if err != nil {
 			return err
 		}

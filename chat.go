@@ -237,7 +237,7 @@ func HandleMessage(msg *tgbotapi.Message) {
 			reply("Card created", nil)
 			return u.SetAndShowState(c, DeckDetails, &Data{DeckID: data.DeckID})
 		case CardEdit:
-			card, err := GetCard(tx, data.CardID)
+			card, err := GetCard(tx, data.CardID, u.ID)
 			if err != nil {
 				return err
 			}
@@ -258,7 +258,7 @@ func HandleMessage(msg *tgbotapi.Message) {
 				return CardEdit.Show(c)
 			}
 		case CardEditFront:
-			card, err := GetCard(tx, data.CardID)
+			card, err := GetCard(tx, data.CardID, u.ID)
 			if err != nil {
 				return err
 			}
@@ -268,7 +268,7 @@ func HandleMessage(msg *tgbotapi.Message) {
 			reply("Card updated", nil)
 			return u.SetAndShowState(c, DeckDetails, &Data{DeckID: card.DeckID})
 		case CardEditBack:
-			card, err := GetCard(tx, data.CardID)
+			card, err := GetCard(tx, data.CardID, u.ID)
 			if err != nil {
 				return err
 			}

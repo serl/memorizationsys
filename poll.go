@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/getsentry/raven-go"
-	"gopkg.in/telegram-bot-api.v4"
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
 func poll() (bool, error) {
@@ -38,7 +38,7 @@ func poll() (bool, error) {
 	for i := 0; i < len(users); i++ {
 		userID := users[i]
 		cardID := cards[i]
-		card, err := GetCard(tx, cardID)
+		card, err := GetCard(tx, cardID, userID)
 		if err != nil {
 			log.Print(err)
 			continue
