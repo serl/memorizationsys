@@ -12,11 +12,11 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"googlemaps.github.io/maps"
-	"gopkg.in/telegram-bot-api.v4"
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
 var (
-	Hostname             string
+	Hostname string
 
 	DB *sqlx.DB
 
@@ -71,7 +71,6 @@ func readSecrets() error {
 	return err
 }
 
-//go:generate file2const --package=main site/index.html:Site site.go
 func createHandler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/telegram/webhook/"+Secrets.BotToken, raven.RecoveryHandler(handleTelegramWebhook))
@@ -85,13 +84,9 @@ func createHandler() http.Handler {
 			log.Println(err)
 		}
 	})
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusOK)
-		if os.Getenv("NO_SITE") == "" {
-			w.Write([]byte(Site))
-		}
-	})
+	if os.Getenv("NO_SITE") == "" {
+		mux.Handle("/", http.FileServer(http.Dir("site")))
+	}
 	return mux
 }
 

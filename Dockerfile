@@ -11,7 +11,7 @@ RUN go get \
   "github.com/facebookgo/grace/gracehttp" \
   "github.com/lib/pq"
 
-ADD . /go/
+COPY . /go/
 WORKDIR /go
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o main .
@@ -32,5 +32,6 @@ RUN apk add --no-cache curl
 
 COPY --from=builder /go/main /usr/local/bin
 COPY webhook-dog.sh /usr/local/bin
+COPY site /site
 
 CMD ["main"]
