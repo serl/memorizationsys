@@ -3,7 +3,10 @@
 Spaced repetition system bot for Telegram `@memorizationsys_bot`.
 [Fork](https://github.com/bouk/memorizationbot) of [Memorization Bot](https://memorizationbot.com/).
 
-> TODO: write why this one is WAY superior than the original.
+Things added:
+
+* If you manage to successfully write the back of the card, it will be interpreted as 'recalled' (or if your reply does not match perfectly, 'show back').
+* Always show the total number of cards in deck (even when there are no cards to review).
 
 ## Host locally with `docker-compose`
 
