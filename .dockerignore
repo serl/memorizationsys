@@ -1,5 +1,6 @@
 .git
 README.md
+.env
 .env.sample
 Dockerfile
 docker-compose.yml

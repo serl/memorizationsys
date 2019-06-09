@@ -84,7 +84,7 @@ func createHandler() http.Handler {
 			log.Println(err)
 		}
 	})
-	if os.Getenv("NO_SITE") == "" {
+	if os.Getenv("SERVE_SITE") != "" {
 		mux.Handle("/", http.FileServer(http.Dir("site")))
 	}
 	return mux
