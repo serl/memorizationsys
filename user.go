@@ -3,13 +3,15 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
-	"time"
 	"errors"
+	"log"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/jmoiron/sqlx/types"
+	"github.com/pascaldekloe/jwt"
 )
 
 type User struct {
@@ -133,6 +135,17 @@ func (u *User) GetScheduledCard(tx *sqlx.Tx) (*Card, error) {
 	} else {
 		return &card, err
 	}
+}
+
+func (u *User) GenerateToken() ([]byte, error) {
+	if os.Getenv("SERVE_API") == "" {
+		return nil, errors.New("API disabled")
+	}
+	var claims jwt.Claims
+	claims.Subject = strconv.Itoa(u.ID)
+	claims.Issued = jwt.NewNumericTime(time.Now())
+	claims.Expires = jwt.NewNumericTime(time.Now().Add(Secrets.JWTValidity))
+	return claims.ECDSASign(jwt.ES256, Secrets.JWTPrivateKey)
 }
 
 func WithUser(ID int, f func(*User, *sqlx.Tx) error) error {

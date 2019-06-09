@@ -9,7 +9,7 @@ import (
 
 type Deck struct {
 	ID        int    `db:"id"`
-	UserID    int    `db:"user_id"`
+	UserID    int    `db:"user_id" json:"-"`
 	Name      string `db:"name"`
 	Scheduled bool   `db:"scheduled"`
 
@@ -28,6 +28,12 @@ func (d *Deck) SetName(tx *sqlx.Tx, name string) error {
 
 func (d *Deck) SetScheduled(tx *sqlx.Tx, scheduled bool) error {
 	return tx.Get(d, "UPDATE decks SET scheduled=$1 WHERE id=$2 RETURNING *", scheduled, d.ID)
+}
+
+func (d *Deck) GetCards(tx *sqlx.Tx) ([]Card, error) {
+	cards := []Card{}
+	err := tx.Select(&cards, "SELECT * FROM cards WHERE deck_id=$1", d.ID)
+	return cards, err
 }
 
 func (d *Deck) GetCardForReview(c *Context) (*Card, error) {

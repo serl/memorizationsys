@@ -1,16 +1,22 @@
 package main
 
 import (
+	"crypto/ecdsa"
+	"crypto/x509"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/getsentry/raven-go"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/pascaldekloe/jwt"
 	"googlemaps.github.io/maps"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
@@ -24,10 +30,12 @@ var (
 	Maps   *maps.Client
 
 	Secrets struct {
-		BotToken                 string `json:"bot_token"`
-		PostgresConnectionString string `json:"postgres_connection_string"`
-		MapsAPIKey               string `json:"maps_api_key"`
-		SentryDSN                string `json:"sentry_dsn"`
+		BotToken                 string            `json:"bot_token"`
+		PostgresConnectionString string            `json:"postgres_connection_string"`
+		MapsAPIKey               string            `json:"maps_api_key"`
+		SentryDSN                string            `json:"sentry_dsn"`
+		JWTPrivateKey            *ecdsa.PrivateKey `json:"-"`
+		JWTValidity              time.Duration     `json:"-"`
 	}
 )
 
@@ -42,6 +50,27 @@ func readSecrets() error {
 	Secrets.BotToken = os.Getenv("BOT_TOKEN")
 	Secrets.MapsAPIKey = os.Getenv("MAPS_API_KEY")
 	Secrets.PostgresConnectionString = os.Getenv("DATABASE_URL")
+
+	if os.Getenv("SERVE_API") != "" {
+		var rawKey = strings.ReplaceAll(os.Getenv("JWT_PRIVATE_KEY"), "\\n", "\n")
+		block, _ := pem.Decode([]byte(rawKey))
+		if block == nil {
+			return errors.New("No JWT key given")
+		}
+		Secrets.JWTPrivateKey, err = x509.ParseECPrivateKey(block.Bytes)
+		if err != nil {
+			return err
+		}
+		var rawValidity = os.Getenv("JWT_VALIDITY")
+		if rawValidity != "" {
+			Secrets.JWTValidity, err = time.ParseDuration(rawValidity)
+			if err != nil {
+				return err
+			}
+		} else {
+			Secrets.JWTValidity = 15 * time.Minute
+		}
+	}
 
 	if Secrets.SentryDSN != "" {
 		raven.SetDSN(Secrets.SentryDSN)
@@ -84,6 +113,18 @@ func createHandler() http.Handler {
 			log.Println(err)
 		}
 	})
+	if os.Getenv("SERVE_API") != "" {
+		mux.Handle("/api/", http.StripPrefix("/api/",
+			&jwt.Handler{
+				Target: http.HandlerFunc(apiHandler),
+				Keys:   &jwt.KeyRegister{ECDSAs: []*ecdsa.PublicKey{&Secrets.JWTPrivateKey.PublicKey}},
+				HeaderBinding: map[string]string{
+					"sub": "X-User",
+				},
+			},
+		))
+
+	}
 	if os.Getenv("SERVE_SITE") != "" {
 		mux.Handle("/", http.FileServer(http.Dir("site")))
 	}

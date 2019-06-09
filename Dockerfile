@@ -9,7 +9,8 @@ RUN go get \
   "googlemaps.github.io/maps" \
   "gopkg.in/telegram-bot-api.v4" \
   "github.com/facebookgo/grace/gracehttp" \
-  "github.com/lib/pq"
+  "github.com/lib/pq" \
+  "github.com/pascaldekloe/jwt"
 
 COPY . /go/
 WORKDIR /go

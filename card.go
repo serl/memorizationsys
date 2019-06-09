@@ -11,7 +11,7 @@ import (
 
 type Card struct {
 	ID     int `db:"id"`
-	DeckID int `db:"deck_id"`
+	DeckID int `db:"deck_id" json:"-"`
 
 	// []Message
 	Front types.JSONText `db:"front"`
