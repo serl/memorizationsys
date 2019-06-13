@@ -4,9 +4,11 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"runtime/debug"
 	"strconv"
 	"time"
 
+	"github.com/getsentry/raven-go"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -67,9 +69,11 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		reply = CreateAPIError(err)
-		if reply.Code == http.StatusInternalServerError {
-			log.Println(err)
-		}
+	}
+	if reply.Error != nil && reply.Code == http.StatusInternalServerError {
+		log.Println(reply.Error)
+		debug.PrintStack()
+		raven.CaptureError(reply.Error, nil)
 	}
 	reply.Token = token
 	SendResponse(reply, w)

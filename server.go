@@ -33,7 +33,6 @@ var (
 		BotToken                 string            `json:"bot_token"`
 		PostgresConnectionString string            `json:"postgres_connection_string"`
 		MapsAPIKey               string            `json:"maps_api_key"`
-		SentryDSN                string            `json:"sentry_dsn"`
 		JWTPrivateKey            *ecdsa.PrivateKey `json:"-"`
 		JWTValidity              time.Duration     `json:"-"`
 	}
@@ -46,7 +45,6 @@ func Send(c tgbotapi.Chattable) (tgbotapi.Message, error) {
 func readSecrets() error {
 	var err error
 
-	Secrets.SentryDSN = os.Getenv("SENTRY_DSN")
 	Secrets.BotToken = os.Getenv("BOT_TOKEN")
 	Secrets.MapsAPIKey = os.Getenv("MAPS_API_KEY")
 	Secrets.PostgresConnectionString = os.Getenv("DATABASE_URL")
@@ -72,9 +70,6 @@ func readSecrets() error {
 		}
 	}
 
-	if Secrets.SentryDSN != "" {
-		raven.SetDSN(Secrets.SentryDSN)
-	}
 	if Secrets.BotToken == "" {
 		return errors.New("bot_token is missing in secrets")
 	}
@@ -102,7 +97,7 @@ func readSecrets() error {
 
 func createHandler() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/telegram/webhook/"+Secrets.BotToken, raven.RecoveryHandler(handleTelegramWebhook))
+	mux.HandleFunc("/telegram/webhook/"+Secrets.BotToken, handleTelegramWebhook)
 	mux.HandleFunc("/telegram/register_webhook/"+Secrets.BotToken, func(w http.ResponseWriter, r *http.Request) {
 		_, err := BotAPI.SetWebhook(tgbotapi.NewWebhook(fmt.Sprintf("https://%s/telegram/webhook/%s", Hostname, Secrets.BotToken)))
 		if err == nil {
@@ -140,7 +135,7 @@ func main() {
 
 	httpServer := &http.Server{
 		Addr:    ":" + os.Getenv("PORT"),
-		Handler: createHandler(),
+		Handler: raven.Recoverer(createHandler()),
 	}
 
 	go Poller()
