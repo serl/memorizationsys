@@ -14,7 +14,7 @@ function Deck({ deck }) {
 
   return (
     <>
-      <Typography variant='h2' component='h2' className={classes.title}>
+      <Typography variant='h3' component='h2' className={classes.title}>
         {deck.Name}
       </Typography>
       <Grid container spacing={3}>
