@@ -79,6 +79,8 @@ const (
 
 	SetRehearsalTime
 
+	AskForToken
+
 	stateCount
 )
 
@@ -325,6 +327,23 @@ func (s State) Show(c *Context) error {
 		reply(
 			"Please select your preferred time of day to rehearse. You can also type out the time yourself.",
 			keyboard,
+		)
+	case AskForToken:
+		token, err := u.GenerateToken()
+		if err != nil {
+			return err
+		}
+		replyMessage := "Token generation disabled"
+		if token != nil {
+			replyMessage = string(token)
+		}
+		reply(
+			replyMessage,
+			tgbotapi.NewReplyKeyboard(
+				tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButton(Back),
+				),
+			),
 		)
 	}
 	return nil

@@ -138,7 +138,7 @@ func (u *User) GetScheduledCard(tx *sqlx.Tx) (*Card, error) {
 
 func (u *User) GenerateToken() ([]byte, error) {
 	if Secrets.JWTPrivateKey == nil {
-		return nil, errors.New("Token generation disabled")
+		return nil, nil
 	}
 	var claims jwt.Claims
 	claims.Subject = strconv.Itoa(u.ID)
