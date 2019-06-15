@@ -16,4 +16,4 @@ services:
     environment:
       POSTGRES_PASSWORD: memsys
     volumes:
-      - "./server:/docker-entrypoint-initdb.d:ro"
+      - "./db:/docker-entrypoint-initdb.d:ro"

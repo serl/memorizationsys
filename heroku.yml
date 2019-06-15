@@ -1,6 +1,7 @@
 setup:
   addons:
     - plan: heroku-postgresql
+    - plan: sentry
 build:
   docker:
     web: Dockerfile

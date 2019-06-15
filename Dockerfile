@@ -12,7 +12,7 @@ RUN go get \
   "github.com/lib/pq" \
   "github.com/pascaldekloe/jwt"
 
-COPY . /go/
+COPY ./server /go/
 WORKDIR /go
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o main .
@@ -23,7 +23,7 @@ FROM alpine
 RUN apk add --no-cache curl
 
 COPY --from=builder /go/main /usr/local/bin
-COPY webhook-dog.sh /usr/local/bin
+COPY server/webhook-dog.sh /usr/local/bin
 COPY site /site
 
 CMD ["main"]
