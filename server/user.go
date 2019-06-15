@@ -144,7 +144,7 @@ func (u *User) GenerateToken() ([]byte, error) {
 	claims.Subject = strconv.Itoa(u.ID)
 	claims.Issued = jwt.NewNumericTime(time.Now())
 	claims.Expires = jwt.NewNumericTime(time.Now().Add(Configuration.JWTValidity))
-	return claims.ECDSASign(jwt.ES256, Secrets.JWTPrivateKey)
+	return claims.ECDSASign(jwt.ES512, Secrets.JWTPrivateKey)
 }
 
 func WithUser(ID int, f func(*User, *sqlx.Tx) error) error {
