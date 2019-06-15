@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
-	"os"
 	"strconv"
 	"time"
 
@@ -138,13 +137,13 @@ func (u *User) GetScheduledCard(tx *sqlx.Tx) (*Card, error) {
 }
 
 func (u *User) GenerateToken() ([]byte, error) {
-	if os.Getenv("SERVE_API") == "" {
-		return nil, errors.New("API disabled")
+	if Secrets.JWTPrivateKey == nil {
+		return nil, errors.New("Token generation disabled")
 	}
 	var claims jwt.Claims
 	claims.Subject = strconv.Itoa(u.ID)
 	claims.Issued = jwt.NewNumericTime(time.Now())
-	claims.Expires = jwt.NewNumericTime(time.Now().Add(Secrets.JWTValidity))
+	claims.Expires = jwt.NewNumericTime(time.Now().Add(Configuration.JWTValidity))
 	return claims.ECDSASign(jwt.ES256, Secrets.JWTPrivateKey)
 }
 
@@ -160,7 +159,7 @@ func WithUser(ID int, f func(*User, *sqlx.Tx) error) error {
 	var user User
 	err = tx.Get(&user, "SELECT * FROM users WHERE id=$1 FOR UPDATE", ID)
 	if err == sql.ErrNoRows {
-		if os.Getenv("NO_NEW_USERS") != "" {
+		if Configuration.DenyNewUsers {
 			return errors.New("Not accepting new users :(")
 		}
 		_, err = tx.Exec("INSERT INTO users (id, state) VALUES ($1, $2) ON CONFLICT DO NOTHING", ID, DeckList)

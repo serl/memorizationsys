@@ -22,7 +22,14 @@ import (
 )
 
 var (
-	Hostname string
+	Configuration struct {
+		Hostname     string
+		Port         string
+		ServeAPI     bool
+		ServeSite    bool
+		JWTValidity  time.Duration
+		DenyNewUsers bool
+	}
 
 	DB *sqlx.DB
 
@@ -30,11 +37,10 @@ var (
 	Maps   *maps.Client
 
 	Secrets struct {
-		BotToken                 string            `json:"bot_token"`
-		PostgresConnectionString string            `json:"postgres_connection_string"`
-		MapsAPIKey               string            `json:"maps_api_key"`
-		JWTPrivateKey            *ecdsa.PrivateKey `json:"-"`
-		JWTValidity              time.Duration     `json:"-"`
+		BotToken                 string
+		PostgresConnectionString string
+		MapsAPIKey               string
+		JWTPrivateKey            *ecdsa.PrivateKey
 	}
 )
 
@@ -45,11 +51,16 @@ func Send(c tgbotapi.Chattable) (tgbotapi.Message, error) {
 func readSecrets() error {
 	var err error
 
+	Configuration.Hostname = os.Getenv("HOSTNAME")
+	Configuration.Port = os.Getenv("PORT")
+	Configuration.ServeAPI = os.Getenv("SERVE_API") != ""
+	Configuration.ServeSite = os.Getenv("SERVE_SITE") != ""
+	Configuration.DenyNewUsers = os.Getenv("NO_NEW_USERS") != ""
 	Secrets.BotToken = os.Getenv("BOT_TOKEN")
 	Secrets.MapsAPIKey = os.Getenv("MAPS_API_KEY")
 	Secrets.PostgresConnectionString = os.Getenv("DATABASE_URL")
 
-	if os.Getenv("SERVE_API") != "" {
+	if os.Getenv("JWT_PRIVATE_KEY") != "" {
 		var rawKey = strings.ReplaceAll(os.Getenv("JWT_PRIVATE_KEY"), "\\n", "\n")
 		block, _ := pem.Decode([]byte(rawKey))
 		if block == nil {
@@ -61,12 +72,12 @@ func readSecrets() error {
 		}
 		var rawValidity = os.Getenv("JWT_VALIDITY")
 		if rawValidity != "" {
-			Secrets.JWTValidity, err = time.ParseDuration(rawValidity)
+			Configuration.JWTValidity, err = time.ParseDuration(rawValidity)
 			if err != nil {
 				return err
 			}
 		} else {
-			Secrets.JWTValidity = 15 * time.Minute
+			Configuration.JWTValidity = 15 * time.Minute
 		}
 	}
 
@@ -99,7 +110,7 @@ func createHandler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/telegram/webhook/"+Secrets.BotToken, handleTelegramWebhook)
 	mux.HandleFunc("/telegram/register_webhook/"+Secrets.BotToken, func(w http.ResponseWriter, r *http.Request) {
-		_, err := BotAPI.SetWebhook(tgbotapi.NewWebhook(fmt.Sprintf("https://%s/telegram/webhook/%s", Hostname, Secrets.BotToken)))
+		_, err := BotAPI.SetWebhook(tgbotapi.NewWebhook(fmt.Sprintf("https://%s/telegram/webhook/%s", Configuration.Hostname, Secrets.BotToken)))
 		if err == nil {
 			log.Println("Webhook set!")
 			http.Error(w, http.StatusText(http.StatusOK), http.StatusOK)
@@ -108,7 +119,7 @@ func createHandler() http.Handler {
 			log.Println(err)
 		}
 	})
-	if os.Getenv("SERVE_API") != "" {
+	if Configuration.ServeAPI {
 		mux.Handle("/api/", http.StripPrefix("/api/",
 			&jwt.Handler{
 				Target: http.HandlerFunc(apiHandler),
@@ -120,26 +131,26 @@ func createHandler() http.Handler {
 		))
 
 	}
-	if os.Getenv("SERVE_SITE") != "" {
+	if Configuration.ServeSite {
 		mux.Handle("/", http.FileServer(http.Dir("site")))
 	}
 	return mux
 }
 
 func main() {
-	Hostname = os.Getenv("HOSTNAME")
-
 	if err := readSecrets(); err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
 	httpServer := &http.Server{
-		Addr:    ":" + os.Getenv("PORT"),
+		Addr:    ":" + Configuration.Port,
 		Handler: raven.Recoverer(createHandler()),
 	}
 
 	go Poller()
-	log.Println("Starting HTTP Server on port " + os.Getenv("PORT"))
+
+	log.Println("Starting HTTP Server on port " + Configuration.Port)
 	if err := gracehttp.Serve(httpServer); err != nil {
 		log.Fatal(err)
 	}
