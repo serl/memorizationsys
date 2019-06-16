@@ -9,9 +9,14 @@ const useStyles = makeStyles(theme => ({
   },
 
   card: {
-    transition: theme.transitions.create('all', {
-      duration: theme.transitions.duration.complex,
-    }),
+    transition: [
+      theme.transitions.create('transform', {
+        duration: theme.transitions.duration.complex,
+      }),
+      theme.transitions.create('height', {
+        duration: theme.transitions.duration.shorter,
+      }),
+    ],
     transformStyle: 'preserve-3d',
     position: 'relative',
     overflow: 'unset',
@@ -37,19 +42,20 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function useClientRect() {
+function useClientRect(contents) {
   const [rect, setRect] = useState({})
   const ref = useCallback(node => {
     if (node !== null) {
       setRect(node.getBoundingClientRect())
     }
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contents]) // recalculate on content change
   return [rect, ref]
 }
 
 function FlippingCard({ flipped, front, back }) {
-  const [frontRect, frontRef] = useClientRect()
-  const [backRect, backRef] = useClientRect()
+  const [frontRect, frontRef] = useClientRect(front)
+  const [backRect, backRef] = useClientRect(back)
   const classes = useStyles({ flipped, frontHeight: frontRect.height, backHeight: backRect.height })
   return (
     <div className={classes.root}>

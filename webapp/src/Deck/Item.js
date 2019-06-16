@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Typography, CardContent, CardHeader, CardActions, Button, Tooltip } from '@material-ui/core'
+import { Typography, CardContent, CardHeader, CardActions, Input, Button, Tooltip } from '@material-ui/core'
 import FlippingCard from '../FlippingCard'
 import PopupMenu from '../PopupMenu'
 import { DateOnly, DateTime } from '../DateTimeFormatter'
@@ -9,31 +9,70 @@ const useStyles = makeStyles({
   message: {
     letterSpacing: 0, // otherwise emoji flags are broken
   },
+  messageInput: {
+    fontSize: '2.125rem',
+  },
   bullet: {
     display: 'inline-block',
     margin: '0 .5em',
     transform: 'scale(0.8)',
   },
-  saveButton: {
+  rightButtons: {
     marginLeft: 'auto',
+    padding: 0,
   },
 })
 
-function CardSide({ content }) {
+function Message({ message, editing, onChange }) {
   const classes = useStyles()
+  switch (message.t) {
+    case 0:
+      const handleChange = value => onChange({ ...message, c: value })
+      return (
+        editing ?
+          <Input
+            className={classes.messageInput}
+            placeholder='Message'
+            inputProps={{
+              'aria-label': 'Message',
+            }}
+            value={message.c}
+            onChange={e => handleChange(e.target.value)}
+          />
+          :
+          <Typography
+            variant='h4'
+            component='h3'
+            className={classes.message}
+          >
+            {message.c}
+          </Typography>
+      )
+    default:
+      return (
+        <Typography variant='h5' color='textSecondary'>
+          [not supported]
+        </Typography>
+      )
+  }
+}
+
+function CardSide({ content, editing, onChange }) {
+  const handleChange = (i, newMessage) => {
+    const newContent = [...content]
+    newContent[i] = newMessage
+    onChange(newContent)
+  }
 
   return (
     <CardContent>
       {content.map((message, i) =>
-        <Typography
+        <Message
           key={i}
-          color={message.t === 0 ? 'textPrimary' : 'textSecondary'}
-          variant='h4'
-          component='h3'
-          className={classes.message}
-        >
-          {message.c || 'message type not supported'}
-        </Typography>
+          message={message}
+          editing={editing}
+          onChange={newMessage => handleChange(i, newMessage)}
+        />
       )}
     </CardContent>
   )
@@ -92,7 +131,7 @@ function CardHead({ card }) {
 }
 
 
-function CardFoot({ card, isBack, setFlipped }) {
+function CardFoot({ card, isBack, setFlipped, editing, handleEditStart, handleEditComplete, handleEditCancel }) {
   const classes = useStyles()
   const flipLabel = isBack ? 'Show front' : 'Show Back'
   const flipHandler = () => setFlipped(!isBack)
@@ -105,28 +144,74 @@ function CardFoot({ card, isBack, setFlipped }) {
       </CardContent>
       <CardActions>
         <Button variant='outlined' onClick={flipHandler}>{flipLabel}</Button>
-        <Button variant='outlined' color='primary' className={classes.saveButton}>Save</Button>
+        <CardActions className={classes.rightButtons}>
+          {editing ?
+            <>
+              <Button variant='contained' color='primary' onClick={handleEditComplete}>
+                Save
+              </Button>
+              <Button variant='outlined' onClick={handleEditCancel}>
+                Cancel
+              </Button>
+            </>
+            :
+            <Button variant='outlined' color='primary' onClick={handleEditStart}>
+              Edit
+            </Button>
+          }
+        </CardActions>
       </CardActions>
     </>
   )
 }
 
-function DeckItem({ card }) {
+function DeckItem({ card: inputCard }) {
+  const [card, setCard] = useState(inputCard)
   const [flipped, setFlipped] = useState(false)
+  const [editing, setEditing] = useState(false)
+
+  const handleChange = delta =>
+    setCard({ ...card, ...delta })
+
+  const handleEditStart = () => {
+    setEditing(true)
+  }
+
+  const handleEditCancel = () => {
+    setCard(inputCard)
+    setEditing(false)
+  }
+
+  const handleEditComplete = () => {
+    setEditing(false)
+    if (card === inputCard) {
+      return
+    }
+    console.log('save', card)
+  }
+
+  const cardFootProps = {
+    card,
+    setFlipped,
+    editing,
+    handleEditStart,
+    handleEditComplete,
+    handleEditCancel,
+  }
 
   const front = (
     <>
       <CardHead card={card} />
-      <CardSide content={card.Front} />
-      <CardFoot {...{ card, setFlipped }} isBack={false} />
+      <CardSide content={card.Front} editing={editing} onChange={Front => handleChange({ Front })} />
+      <CardFoot {...cardFootProps} isBack={false} />
     </>
   )
 
   const back = (
     <>
       <CardHead card={card} />
-      <CardSide content={card.Back} />
-      <CardFoot {...{ card, setFlipped }} isBack={true} />
+      <CardSide content={card.Back} editing={editing} onChange={Back => handleChange({ Back })} />
+      <CardFoot {...cardFootProps} isBack={true} />
     </>
   )
 
