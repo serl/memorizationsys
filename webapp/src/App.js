@@ -1,28 +1,35 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { Route, Switch } from 'react-router-dom'
 import { Container } from '@material-ui/core'
 import TopMenu from './TopMenu'
 import Deck from './Deck'
 import DeckMenu from './DeckMenu'
 import decks from './data'
 
-function useSelectedDeck(decks) {
-  const [selectedDeckId, setSelectedDeck] = useState()
-  const selectedDeck = (decks || []).filter(d => d.ID === selectedDeckId)[0]
-  return [selectedDeck, setSelectedDeck]
+function findDeck(decks, deckID) {
+  const intDeckID = parseInt(deckID, 10)
+  return (decks || []).filter(d => d.ID === intDeckID)[0]
 }
 
 function App() {
-  const [selectedDeck, setSelectedDeck] = useSelectedDeck(decks)
-
   return (
     <>
-      <TopMenu setSelectedDeck={setSelectedDeck} />
+      <TopMenu />
       <Container maxWidth='md'>
-        {selectedDeck ?
-          <Deck deck={selectedDeck} />
-          :
-          <DeckMenu {...{ decks, setSelectedDeck }} />
-        }
+        <Switch>
+          <Route
+            path='/:deckID'
+            render={({ match }) =>
+              <Deck deck={findDeck(decks, match.params.deckID)} />
+            }
+          />
+          <Route
+            path='/'
+            render={() =>
+              <DeckMenu {...{ decks }} />
+            }
+          />
+        </Switch>
       </Container>
     </>
   )

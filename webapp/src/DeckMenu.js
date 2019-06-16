@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link as RouterLink } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { ButtonBase, Typography, Grid, Paper } from '@material-ui/core'
 
@@ -13,12 +14,17 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function DeckMenuItem({ deck, onClick = () => { } }) {
+function DeckMenuItem({ deck }) {
   const classes = useStyles()
 
   return (
     <Grid item xs={12} md={6}>
-      <ButtonBase className={classes.button} focusRipple onClick={onClick}>
+      <ButtonBase
+        className={classes.button}
+        focusRipple
+        component={RouterLink}
+        to={`/${deck.ID}`}
+      >
         <Paper className={classes.card}>
           <Typography variant='h5' component='h2'>
             {deck.Name}
@@ -35,11 +41,11 @@ function DeckMenuItem({ deck, onClick = () => { } }) {
   )
 }
 
-function DeckMenu({ decks, setSelectedDeck }) {
+function DeckMenu({ decks }) {
   return (
     <Grid container spacing={3}>
       {(decks || []).map(deck =>
-        <DeckMenuItem key={deck.ID} deck={deck} onClick={() => setSelectedDeck(deck.ID)} />
+        <DeckMenuItem key={deck.ID} deck={deck} />
       )}
     </Grid>
   )
