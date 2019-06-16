@@ -78,18 +78,18 @@ function CardSide({ content, editing, onChange }) {
   )
 }
 
-function CardHead({ card }) {
+function CardHead({ card, handleReset, handleDelete }) {
   const classes = useStyles()
   const bullet = <span className={classes.bullet}>•</span>
 
   const menuOptions = [
     {
       name: 'Reset',
-      action: () => console.log('reset', card.ID),
+      action: () => handleReset(card.ID),
     },
     {
       name: 'Delete',
-      action: () => console.log('delete', card.ID),
+      action: () => handleDelete(card.ID),
     },
   ]
 
@@ -190,6 +190,18 @@ function DeckItem({ card: inputCard }) {
     console.log('save', card)
   }
 
+  const handleReset = cardID => {
+    editing && handleEditCancel()
+    console.log('reset', cardID)
+  }
+
+  const handleDelete = cardID => {
+    editing && handleEditCancel()
+    console.log('delete', cardID)
+  }
+
+  const cardHead = <CardHead {...{ card, handleReset, handleDelete }} />
+
   const cardFootProps = {
     card,
     setFlipped,
@@ -201,7 +213,7 @@ function DeckItem({ card: inputCard }) {
 
   const front = (
     <>
-      <CardHead card={card} />
+      {cardHead}
       <CardSide content={card.Front} editing={editing} onChange={Front => handleChange({ Front })} />
       <CardFoot {...cardFootProps} isBack={false} />
     </>
@@ -209,7 +221,7 @@ function DeckItem({ card: inputCard }) {
 
   const back = (
     <>
-      <CardHead card={card} />
+      {cardHead}
       <CardSide content={card.Back} editing={editing} onChange={Back => handleChange({ Back })} />
       <CardFoot {...cardFootProps} isBack={true} />
     </>
