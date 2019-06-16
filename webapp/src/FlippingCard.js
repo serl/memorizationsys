@@ -2,14 +2,16 @@ import React, { useState, useCallback } from 'react'
 import { Card } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
   // comes from https://davidwalsh.name/css-flip with some JS adjustments to work without knowing the height
   root: {
     perspective: '1000px',
   },
 
   card: {
-    transition: '0.6s',
+    transition: theme.transitions.create('all', {
+      duration: theme.transitions.duration.complex,
+    }),
     transformStyle: 'preserve-3d',
     position: 'relative',
     overflow: 'unset',
@@ -31,8 +33,9 @@ const useStyles = makeStyles({
   },
   back: {
     transform: 'rotateY(180deg)',
+    backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 15px, ${theme.palette.grey[200]} 15px, ${theme.palette.grey[200]} 20px)`,
   },
-})
+}))
 
 function useClientRect() {
   const [rect, setRect] = useState({})
