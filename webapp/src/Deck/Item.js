@@ -165,7 +165,7 @@ function CardFoot({ card, isBack, setFlipped, editing, handleEditStart, handleEd
   )
 }
 
-function DeckItem({ card: inputCard }) {
+function DeckItem({ card: inputCard, saveCard, deleteCard, resetCard }) {
   const [card, setCard] = useState(inputCard)
   const [flipped, setFlipped] = useState(false)
   const [editing, setEditing] = useState(false)
@@ -187,17 +187,17 @@ function DeckItem({ card: inputCard }) {
     if (card === inputCard) {
       return
     }
-    console.log('save', card)
+    saveCard(card)
   }
 
   const handleReset = cardID => {
     editing && handleEditCancel()
-    console.log('reset', cardID)
+    resetCard(cardID)
   }
 
   const handleDelete = cardID => {
     editing && handleEditCancel()
-    console.log('delete', cardID)
+    deleteCard(cardID)
   }
 
   const cardHead = <CardHead {...{ card, handleReset, handleDelete }} />

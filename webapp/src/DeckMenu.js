@@ -1,4 +1,5 @@
 import React from 'react'
+import { connect } from 'react-redux'
 import { Link as RouterLink } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { ButtonBase, Typography, Grid, Paper } from '@material-ui/core'
@@ -44,11 +45,14 @@ function DeckMenuItem({ deck }) {
 function DeckMenu({ decks }) {
   return (
     <Grid container spacing={3}>
-      {(decks || []).map(deck =>
-        <DeckMenuItem key={deck.ID} deck={deck} />
+      {Object.entries(decks || {}).map(([id, deck]) =>
+        <DeckMenuItem key={id} deck={deck} />
       )}
     </Grid>
   )
 }
+const mapStateToProps = state => ({
+  decks: state.decks,
+})
 
-export default DeckMenu
+export default connect(mapStateToProps)(DeckMenu)

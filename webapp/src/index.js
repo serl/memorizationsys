@@ -1,15 +1,22 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { Provider } from 'react-redux'
 import * as serviceWorker from './serviceWorker'
 import { HashRouter } from 'react-router-dom'
 import { CssBaseline } from '@material-ui/core'
+import { store } from './state'
 import App from './App'
+import { getDecks } from './state/decks/actions'
+
+store.dispatch(getDecks())
 
 ReactDOM.render(
   <>
     <CssBaseline />
     <HashRouter>
-      <App />
+      <Provider store={store}>
+        <App />
+      </Provider>
     </HashRouter>
   </>,
   document.getElementById('root'),
