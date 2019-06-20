@@ -57,8 +57,11 @@ const fetchWithHTTPErrors = async (url, method, body, headers = {}) => {
   if (res.ok) {
     return res.json()
   } else {
-    const err = new Error(await res.text())
-    err.code = res.status
-    throw err
+    let result = await res.text()
+    try {
+      result = JSON.parse(result)
+      result = result.error || result
+    } catch (e) { }
+    return Promise.reject({ code: res.status, result })
   }
 }

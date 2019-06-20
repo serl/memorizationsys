@@ -12,6 +12,7 @@ export function getDecks() {
     meta: {
       async: true,
       path: '/decks',
+      errorFormatter: payload => `Error while getting decks: ${payload.code} ${payload.result}`,
     },
   }
 }
@@ -23,6 +24,7 @@ export function getCards(deckID) {
       async: true,
       path: `/decks/${deckID}/cards`,
       deckID,
+      errorFormatter: payload => `Error while getting cards: ${payload.code} ${payload.result}`,
     },
   }
 }

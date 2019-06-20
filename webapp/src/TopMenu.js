@@ -1,19 +1,16 @@
 import React from 'react'
-import { connect } from 'react-redux'
 import { Link as RouterLink } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
-import { AppBar, Toolbar, Link, LinearProgress } from '@material-ui/core'
+import { AppBar, Toolbar, Link } from '@material-ui/core'
+import ApiStatus from './widgets/ApiStatus'
 
 const useStyles = makeStyles(theme => ({
   root: {
     marginBottom: theme.spacing(5),
   },
-  progress: {
-    marginBottom: -theme.spacing(2),
-  },
 }))
 
-function TopMenu({ loading }) {
+function TopMenu() {
   const classes = useStyles()
 
   return (
@@ -31,13 +28,9 @@ function TopMenu({ loading }) {
           </Link>
         </Toolbar>
       </AppBar>
-      {loading && <LinearProgress className={classes.progress} />}
+      <ApiStatus />
     </div>
   )
 }
 
-const mapStateToProps = ({ api }) => ({
-  loading: api.loading > 0,
-})
-
-export default connect(mapStateToProps)(TopMenu)
+export default TopMenu
