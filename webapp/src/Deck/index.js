@@ -1,9 +1,9 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
 import { Grid, Typography } from '@material-ui/core'
 import DeckItem from './Item'
 import { makeStyles } from '@material-ui/core/styles'
-import { saveCardInDeck, deleteCardInDeck, resetCardInDeck } from '../state/decks/actions'
+import { getCards, saveCardInDeck, deleteCardInDeck, resetCardInDeck } from '../state/decks/actions'
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -11,8 +11,12 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function Deck({ deck, saveCardInDeck, deleteCardInDeck, resetCardInDeck }) {
+function Deck({ deck, getCards, saveCardInDeck, deleteCardInDeck, resetCardInDeck }) {
+  useEffect(() => { deck.ID && getCards(deck.ID) }, [getCards, deck.ID])
   const classes = useStyles()
+  if (!deck.ID) {
+    return null
+  }
 
   const saveCard = card => saveCardInDeck(deck.ID, card)
   const deleteCard = cardID => deleteCardInDeck(deck.ID, cardID)
@@ -35,7 +39,7 @@ function Deck({ deck, saveCardInDeck, deleteCardInDeck, resetCardInDeck }) {
 }
 
 const mapStateToProps = (state, { match }) => ({ // match comes from routing
-  deck: state.decks[match.params.deckID],
+  deck: state.decks[match.params.deckID] || {},
 })
 
-export default connect(mapStateToProps, { saveCardInDeck, deleteCardInDeck, resetCardInDeck })(Deck)
+export default connect(mapStateToProps, { getCards, saveCardInDeck, deleteCardInDeck, resetCardInDeck })(Deck)

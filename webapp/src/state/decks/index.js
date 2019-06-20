@@ -1,5 +1,4 @@
 import * as types from './actions'
-import decksData from '../../data'
 
 function arrayToObject(arr = []) {
   const obj = {}
@@ -11,6 +10,8 @@ function arrayToObject(arr = []) {
 
 function deckReducer(state = {}, action) {
   switch (action.type) {
+    case `${types.GET_CARDS}:COMPLETED`:
+      return { ...state, cards: arrayToObject(action.payload.data) }
     case types.SAVE_CARD:
       return { ...state, cards: { ...state.cards, [action.card.ID]: action.card } }
     case types.DELETE_CARD:
@@ -26,16 +27,14 @@ function deckReducer(state = {}, action) {
 
 export default function (state = {}, action) {
   switch (action.type) {
-    case types.GET_DECKS:
-      if (Object.keys(state).length) {
-        return state
-      } else {
-        return arrayToObject(decksData.map(deck => ({ ...deck, cards: arrayToObject(deck.cards) })))
-      }
+    case `${types.GET_DECKS}:COMPLETED`:
+      return arrayToObject(action.payload.data)
+    case `${types.GET_CARDS}:COMPLETED`:
     case types.SAVE_CARD:
     case types.DELETE_CARD:
     case types.RESET_CARD:
-      return { ...state, [action.deckID]: deckReducer(state[action.deckID], action) }
+      const deckID = action.deckID || action.meta.deckID
+      return { ...state, [deckID]: deckReducer(state[deckID], action) }
     default:
       return state
   }
