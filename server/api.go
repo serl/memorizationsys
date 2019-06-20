@@ -12,10 +12,10 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-var decksRoute = regexp.MustCompile(`^deck/?$`)
-var deckRoute = regexp.MustCompile(`^deck/(\d+)$`)
-var deckCardsRoute = regexp.MustCompile(`^deck/(\d+)/card/?$`)
-var deckCardRoute = regexp.MustCompile(`^deck/(\d+)/card/(\d+)$`)
+var decksRoute = regexp.MustCompile(`^decks/?$`)
+var deckRoute = regexp.MustCompile(`^decks/(\d+)$`)
+var deckCardsRoute = regexp.MustCompile(`^decks/(\d+)/cards/?$`)
+var deckCardRoute = regexp.MustCompile(`^decks/(\d+)/cards/(\d+)$`)
 
 func apiRouter(r *http.Request, u *User, tx *sqlx.Tx) apiResponse {
 	if matches := decksRoute.FindStringSubmatch(r.URL.Path); matches != nil {
