@@ -1,6 +1,7 @@
 import { createStore, combineReducers, applyMiddleware } from 'redux'
 import thunkMiddleware from 'redux-thunk'
 import apiMiddleware from './apiMiddleware'
+import api from './api'
 import decks from './decks'
 import users from './users'
 
@@ -17,7 +18,11 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 const store = createStore(
-  combineReducers({ decks, users }),
+  combineReducers({
+    decks,
+    users,
+    api,
+  }),
   applyMiddleware(...middlewares)
 )
 

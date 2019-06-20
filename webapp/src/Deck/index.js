@@ -38,8 +38,8 @@ function Deck({ deck, getCards, saveCardInDeck, deleteCardInDeck, resetCardInDec
   )
 }
 
-const mapStateToProps = (state, { match }) => ({ // match comes from routing
-  deck: state.decks[match.params.deckID] || {},
+const mapStateToProps = ({ decks }, { match }) => ({ // match comes from routing
+  deck: decks[match.params.deckID] || {},
 })
 
 export default connect(mapStateToProps, { getCards, saveCardInDeck, deleteCardInDeck, resetCardInDeck })(Deck)
