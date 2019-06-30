@@ -33,7 +33,7 @@ export default function (state = {}, action) {
     case types.SAVE_CARD:
     case types.DELETE_CARD:
     case types.RESET_CARD:
-      const deckID = action.deckID || action.meta.deckID
+      const deckID = action.meta.deckID
       return { ...state, [deckID]: deckReducer(state[deckID], action) }
     default:
       return state

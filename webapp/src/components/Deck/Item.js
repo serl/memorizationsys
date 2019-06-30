@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Typography, CardContent, CardHeader, CardActions, Input, Button, Tooltip } from '@material-ui/core'
 import FlippingCard from '../widgets/FlippingCard'
 import PopupMenu from '../widgets/PopupMenu'
@@ -167,6 +167,9 @@ function CardFoot({ card, isBack, setFlipped, editing, handleEditStart, handleEd
 
 function DeckItem({ card: inputCard, saveCard, deleteCard, resetCard }) {
   const [card, setCard] = useState(inputCard)
+  useEffect(() => {
+    setCard(inputCard)
+  }, [inputCard])
   const [flipped, setFlipped] = useState(false)
   const [editing, setEditing] = useState(false)
 

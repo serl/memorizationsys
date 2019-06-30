@@ -30,13 +30,31 @@ export function getCards(deckID) {
 }
 
 export function saveCardInDeck(deckID, card) {
-  return { type: SAVE_CARD, deckID, card }
+  return {
+    type: SAVE_CARD,
+    card,
+    meta: {
+      deckID,
+    },
+  }
 }
 
 export function deleteCardInDeck(deckID, id) {
-  return { type: DELETE_CARD, deckID, id }
+  return {
+    type: DELETE_CARD,
+    id,
+    meta: {
+      deckID,
+    },
+  }
 }
 
 export function resetCardInDeck(deckID, id) {
-  return { type: RESET_CARD, deckID, id }
+  return {
+    type: RESET_CARD,
+    id,
+    meta: {
+      deckID,
+    },
+  }
 }
