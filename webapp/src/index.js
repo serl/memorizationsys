@@ -5,7 +5,7 @@ import * as serviceWorker from './serviceWorker'
 import { HashRouter } from 'react-router-dom'
 import { CssBaseline } from '@material-ui/core'
 import { store } from './state'
-import App from './App'
+import App from './components/App'
 import { setToken } from './state/users/actions'
 import { getDecks } from './state/decks/actions'
 

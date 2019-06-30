@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { Typography, CardContent, CardHeader, CardActions, Input, Button, Tooltip } from '@material-ui/core'
-import FlippingCard from '../FlippingCard'
-import PopupMenu from '../PopupMenu'
-import { DateOnly, DateTime } from '../DateTimeFormatter'
+import FlippingCard from '../widgets/FlippingCard'
+import PopupMenu from '../widgets/PopupMenu'
+import { DateOnly, DateTime } from '../widgets/DateTimeFormatter'
 import { makeStyles } from '@material-ui/core/styles'
 
 const useStyles = makeStyles({

@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Grid, Typography } from '@material-ui/core'
 import DeckItem from './Item'
 import { makeStyles } from '@material-ui/core/styles'
-import { getCards, saveCardInDeck, deleteCardInDeck, resetCardInDeck } from '../state/decks/actions'
+import { getCards, saveCardInDeck, deleteCardInDeck, resetCardInDeck } from '../../state/decks/actions'
 
 const useStyles = makeStyles(theme => ({
   title: {
