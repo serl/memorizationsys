@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { connect } from 'react-redux'
 import { Grid, Typography } from '@material-ui/core'
 import DeckItem from './Item'
@@ -38,14 +38,14 @@ function Deck({ deck, getCards, saveCardInDeck, deleteCardInDeck, resetCardInDec
   const frame = useFrameCounter(Math.ceil(cards.length / cardsPerFrame))
   const cardsLimit = frame*cardsPerFrame
 
+  const saveCard = useCallback(card => saveCardInDeck(deck.ID, card), [saveCardInDeck, deck])
+  const deleteCard = useCallback(cardID => deleteCardInDeck(deck.ID, cardID), [deleteCardInDeck, deck])
+  const resetCard = useCallback(cardID => resetCardInDeck(deck.ID, cardID), [resetCardInDeck, deck])
+
   const classes = useStyles()
   if (!deck.ID) {
     return null
   }
-
-  const saveCard = card => saveCardInDeck(deck.ID, card)
-  const deleteCard = cardID => deleteCardInDeck(deck.ID, cardID)
-  const resetCard = cardID => resetCardInDeck(deck.ID, cardID)
 
   return (
     <>

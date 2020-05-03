@@ -206,4 +206,4 @@ function DeckItem({ card: inputCard, saveCard, deleteCard, resetCard }) {
   )
 }
 
-export default DeckItem
+export default React.memo(DeckItem)
