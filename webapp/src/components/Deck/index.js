@@ -65,8 +65,8 @@ function Deck({ deck, getCards, saveCardInDeck, deleteCardInDeck, resetCardInDec
   )
 }
 
-const mapStateToProps = ({ decks }, { match }) => ({ // match comes from routing
-  deck: decks[match.params.deckID] || {},
+const mapStateToProps = ({ decks }, { deckID }) => ({ // deckId comes from routing
+  deck: decks[deckID] || {},
 })
 
 export default connect(mapStateToProps, { getCards, saveCardInDeck, deleteCardInDeck, resetCardInDeck })(Deck)

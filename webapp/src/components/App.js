@@ -13,7 +13,7 @@ function App() {
         <Switch>
           <Route
             path='/:deckID'
-            component={Deck}
+            render={({ match }) => <Deck deckID={match.params.deckID} />}
           />
           <Route
             path='/'
