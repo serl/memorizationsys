@@ -126,12 +126,22 @@ function CardFoot({ card, isBack, setFlipped, editing, handleEditStart, handleEd
   )
 }
 
+function useStateWithHasBeen(initialState) {
+  const [current, setCurrent] = useState(initialState)
+  const [hasBeen, setHasBeen] = useState(initialState)
+  function set(state) {
+    setHasBeen(hasBeen => hasBeen || state)
+    setCurrent(state)
+  }
+  return [current, hasBeen, set]
+}
+
 function DeckItem({ card: inputCard, saveCard, deleteCard, resetCard }) {
   const [card, setCard] = useState(inputCard)
   useEffect(() => {
     setCard(inputCard)
   }, [inputCard])
-  const [flipped, setFlipped] = useState(false)
+  const [flipped, hasBeenFlipped, setFlipped] = useStateWithHasBeen(false)
   const [editing, setEditing] = useState(false)
 
   const handleChange = delta =>
@@ -183,7 +193,7 @@ function DeckItem({ card: inputCard, saveCard, deleteCard, resetCard }) {
     </>
   )
 
-  const back = (
+  const back = hasBeenFlipped && (
     <>
       {cardHead}
       <CardSide content={card.Back} editing={editing} onChange={Back => handleChange({ Back })} />
