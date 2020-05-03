@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux'
 import { Grid, Typography } from '@material-ui/core'
 import DeckItem from './Item'
@@ -9,10 +9,35 @@ const useStyles = makeStyles(theme => ({
   title: {
     marginBottom: theme.spacing(3),
   },
+  more: {
+    fontSize: '2rem',
+    textAlign: 'center',
+    color: theme.palette.grey[600],
+  },
 }))
+
+function useFrameCounter(limit) {
+  const [current, setCurrent] = useState(0)
+  useEffect(() => {
+    current < limit &&
+      window.requestAnimationFrame(() =>
+        window.requestAnimationFrame(() =>
+          setCurrent(cur => cur + 1),
+        ),
+      )
+  }, [current, limit])
+  return current
+}
 
 function Deck({ deck, getCards, saveCardInDeck, deleteCardInDeck, resetCardInDeck }) {
   useEffect(() => { deck.ID && getCards(deck.ID) }, [getCards, deck.ID])
+
+  const cards = Object.entries(deck.cards || {})
+
+  const cardsPerFrame = 4
+  const frame = useFrameCounter(Math.ceil(cards.length / cardsPerFrame))
+  const cardsLimit = frame*cardsPerFrame
+
   const classes = useStyles()
   if (!deck.ID) {
     return null
@@ -28,11 +53,13 @@ function Deck({ deck, getCards, saveCardInDeck, deleteCardInDeck, resetCardInDec
         {deck.Name}
       </Typography>
       <Grid container spacing={3}>
-        {Object.entries(deck.cards || {}).map(([id, item]) =>
-          <Grid key={id} item xs={12} md={6}>
-            <DeckItem card={item} deckID={deck.ID} {...{ saveCard, deleteCard, resetCard }} />
-          </Grid>
+        {cards.map(([id, item], i) =>
+          i < cardsLimit &&
+            <Grid key={id} item xs={12} md={6}>
+              <DeckItem card={item} deckID={deck.ID} {...{ saveCard, deleteCard, resetCard }} />
+            </Grid>,
         )}
+        {(!deck.cards || cardsLimit < cards.length) && <Grid item xs={12} className={classes.more}>&hellip;</Grid>}
       </Grid>
     </>
   )
