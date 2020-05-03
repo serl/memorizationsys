@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { Typography, CardContent, CardHeader, CardActions, Input, Button, Tooltip } from '@material-ui/core'
+import { Typography, CardContent, CardHeader, CardActions, Button, Tooltip } from '@material-ui/core'
 import FlippingCard from '../widgets/FlippingCard'
 import PopupMenu from '../widgets/PopupMenu'
+import TelegramMessage from '../widgets/TelegramMessage'
 import { DateOnly, DateTime } from '../widgets/DateTimeFormatter'
 import { makeStyles } from '@material-ui/core/styles'
 
 const useStyles = makeStyles({
-  message: {
-    letterSpacing: 0, // otherwise emoji flags are broken
-  },
-  messageInput: {
-    fontSize: '2.125rem',
-  },
   bullet: {
     display: 'inline-block',
     margin: '0 .5em',
@@ -23,40 +18,6 @@ const useStyles = makeStyles({
   },
 })
 
-function Message({ message, editing, onChange }) {
-  const classes = useStyles()
-  switch (message.t) {
-    case 0:
-      const handleChange = value => onChange({ ...message, c: value })
-      return (
-        editing ?
-          <Input
-            className={classes.messageInput}
-            placeholder='Message'
-            inputProps={{
-              'aria-label': 'Message',
-            }}
-            value={message.c}
-            onChange={e => handleChange(e.target.value)}
-          />
-          :
-          <Typography
-            variant='h4'
-            component='h3'
-            className={classes.message}
-          >
-            {message.c}
-          </Typography>
-      )
-    default:
-      return (
-        <Typography variant='h5' color='textSecondary'>
-          [not supported]
-        </Typography>
-      )
-  }
-}
-
 function CardSide({ content, editing, onChange }) {
   const handleChange = (i, newMessage) => {
     const newContent = [...content]
@@ -67,12 +28,12 @@ function CardSide({ content, editing, onChange }) {
   return (
     <CardContent>
       {content.map((message, i) =>
-        <Message
+        <TelegramMessage
           key={i}
           message={message}
           editing={editing}
           onChange={newMessage => handleChange(i, newMessage)}
-        />
+        />,
       )}
     </CardContent>
   )
