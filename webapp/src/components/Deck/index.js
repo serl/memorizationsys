@@ -17,28 +17,14 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function useFrameCounter(limit) {
-  const [current, setCurrent] = useState(0)
-  useEffect(() => {
-    current < limit &&
-      window.requestAnimationFrame(() =>
-        window.requestAnimationFrame(() =>
-          setCurrent(cur => cur + 1),
-        ),
-      )
-  }, [current, limit])
-  const restart = useCallback(() => setCurrent(1), [setCurrent])
-  return [current, restart]
-}
-
 /**
  * @param {Array} cards
- * @param {string} searchString
+ * @param {string} searchTerms
  */
-function filterCards(cards, searchString) {
-  const terms = searchString.trim().toLowerCase().split(/\s+/)
+function filterCards(cards, searchTerms) {
+  const terms = searchTerms.trim().toLowerCase().split(/\s+/)
   return cards.filter(([, card]) => {
-    const findText = msg => terms.some(term => (msg.c || '').toLowerCase().includes(term))
+    const findText = (msg) => terms.some((term) => (msg.c || '').toLowerCase().includes(term))
     return card.Front.some(findText) || card.Back.some(findText)
   })
 }
@@ -46,17 +32,17 @@ function filterCards(cards, searchString) {
 function Deck({ deck, getCards, saveCardInDeck, deleteCardInDeck, resetCardInDeck }) {
   useEffect(() => { deck.ID && getCards(deck.ID) }, [getCards, deck.ID])
 
-  const [filter, setFilter] = useState('')
+  const [searchTerms, setSearchTerms] = useState('')
   const handleChangeFilter = (event) => {
-    setFilter(event.target.value)
+    setSearchTerms(event.target.value)
   }
 
-  const cards = useMemo(() => filterCards(Object.entries(deck.cards || {}), filter.trim()), [deck, filter])
+  const cards = useMemo(() => filterCards(Object.entries(deck.cards || {}), searchTerms), [deck, searchTerms])
 
-  const cardsPerFrame = 4
-  const [frame, restartFrames] = useFrameCounter(Math.ceil(cards.length / cardsPerFrame))
-  const cardsLimit = frame*cardsPerFrame
-  useEffect(() => { restartFrames() }, [filter, restartFrames])
+  const cardsPerBatch = 6
+  const [cardsLimit, setCardsLimit] = useState(cardsPerBatch)
+  useEffect(() => { setCardsLimit(cardsPerBatch) }, [cards])
+  const renderMore = () => setCardsLimit(limit => limit + cardsPerBatch)
 
   const saveCard = useCallback(card => saveCardInDeck(deck.ID, card), [saveCardInDeck, deck])
   const deleteCard = useCallback(cardID => deleteCardInDeck(deck.ID, cardID), [deleteCardInDeck, deck])
@@ -75,7 +61,7 @@ function Deck({ deck, getCards, saveCardInDeck, deleteCardInDeck, resetCardInDec
       <Grid container spacing={3}>
         <Grid item xs={6}>
           <TextField
-            value={filter}
+            value={searchTerms}
             onChange={handleChangeFilter}
             type='search'
             label='Filter'
@@ -95,7 +81,7 @@ function Deck({ deck, getCards, saveCardInDeck, deleteCardInDeck, resetCardInDec
               <DeckItem card={item} deckID={deck.ID} {...{ saveCard, deleteCard, resetCard }} />
             </Grid>,
         )}
-        {(!deck.cards || cardsLimit < cards.length) && <Grid item xs={12} className={classes.more}>&hellip;</Grid>}
+        {(!deck.cards || cardsLimit < cards.length) && <Grid item xs={12} className={classes.more} onClick={renderMore}>&hellip;</Grid>}
       </Grid>
     </>
   )
