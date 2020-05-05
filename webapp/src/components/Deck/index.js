@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { connect } from 'react-redux'
 import { Grid, Typography, TextField, InputAdornment } from '@material-ui/core'
 import SearchIcon from '@material-ui/icons/Search'
+import InfiniteScroll from 'react-infinite-scroller'
 import DeckItem from './Item'
 import { makeStyles } from '@material-ui/core/styles'
 import { getCards, saveCardInDeck, deleteCardInDeck, resetCardInDeck } from '../../state/decks/actions'
@@ -39,10 +40,17 @@ function Deck({ deck, getCards, saveCardInDeck, deleteCardInDeck, resetCardInDec
 
   const cards = useMemo(() => filterCards(Object.entries(deck.cards || {}), searchTerms), [deck, searchTerms])
 
-  const cardsPerBatch = 6
+  const cardsPerBatch = 8
   const [cardsLimit, setCardsLimit] = useState(cardsPerBatch)
   useEffect(() => { setCardsLimit(cardsPerBatch) }, [cards])
-  const renderMore = () => setCardsLimit(limit => limit + cardsPerBatch)
+  const renderMore = useCallback(
+    () => {
+      cards && window.requestAnimationFrame(() => {
+        setCardsLimit(limit => limit + cardsPerBatch)
+      })
+    },
+    [cards],
+  )
 
   const saveCard = useCallback(card => saveCardInDeck(deck.ID, card), [saveCardInDeck, deck])
   const deleteCard = useCallback(cardID => deleteCardInDeck(deck.ID, cardID), [deleteCardInDeck, deck])
@@ -75,14 +83,22 @@ function Deck({ deck, getCards, saveCardInDeck, deleteCardInDeck, resetCardInDec
             }}
           />
         </Grid>
-        {cards.map(([id, item], i) =>
-          i < cardsLimit &&
-            <Grid key={id} item xs={12} md={6}>
-              <DeckItem card={item} deckID={deck.ID} {...{ saveCard, deleteCard, resetCard }} />
-            </Grid>,
-        )}
-        {(!deck.cards || cardsLimit < cards.length) && <Grid item xs={12} className={classes.more} onClick={renderMore}>&hellip;</Grid>}
       </Grid>
+      <InfiniteScroll
+        loadMore={renderMore}
+        hasMore={!deck.cards || cardsLimit < cards.length}
+        threshold={500}
+        loader={<Grid item xs={12} className={classes.more} key='cardsLoader' onClick={renderMore}>&hellip;</Grid>}
+      >
+        <Grid container spacing={3}>
+          {cards.map(([id, item], i) =>
+            i < cardsLimit &&
+              <Grid key={id} item xs={12} md={6}>
+                <DeckItem card={item} deckID={deck.ID} {...{ saveCard, deleteCard, resetCard }} />
+              </Grid>,
+          )}
+        </Grid>
+      </InfiniteScroll>
     </>
   )
 }
