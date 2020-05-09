@@ -11,7 +11,16 @@ function arrayToObject(arr = []) {
 function deckReducer(state = {}, action) {
   switch (action.type) {
     case `${types.GET_CARDS}:COMPLETED`:
-      return { ...state, cards: arrayToObject(action.payload.data) }
+      const now = (new Date()).toISOString()
+      let rehearsing = 0
+      const rawCards = action.payload.data.map(card => {
+        card.Rehearsing = card.NextRepetition < now
+        if (card.Rehearsing) {
+          rehearsing++
+        }
+        return card
+      })
+      return { ...state, cards: arrayToObject(rawCards), TotalCards: rawCards.length, CardsLeft: rehearsing }
     case types.SAVE_CARD:
       return { ...state, cards: { ...state.cards, [action.card.ID]: action.card } }
     case types.DELETE_CARD:

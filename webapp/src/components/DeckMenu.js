@@ -31,7 +31,7 @@ function DeckMenuItem({ deck }) {
             {deck.Name}
           </Typography>
           <Typography color={deck.CardsLeft ? 'textPrimary' : 'textSecondary'}>
-            Cards left: {deck.CardsLeft}/{deck.TotalCards}.
+            Cards left: {deck.TotalCards ? `${deck.CardsLeft}/${deck.TotalCards}.` : '...' }
           </Typography>
           <Typography color='textSecondary'>
             Rehearsal: {deck.Scheduled ? 'enabled' : 'disabled'}.
@@ -46,7 +46,7 @@ function DeckMenu({ decks }) {
   return (
     <Grid container spacing={3}>
       {Object.entries(decks || {}).map(([id, deck]) =>
-        <DeckMenuItem key={id} deck={deck} />
+        <DeckMenuItem key={id} deck={deck} />,
       )}
     </Grid>
   )
