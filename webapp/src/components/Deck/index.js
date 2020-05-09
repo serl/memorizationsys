@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { connect } from 'react-redux'
-import { Grid, Typography, TextField, InputAdornment } from '@material-ui/core'
+import { Grid, Typography, TextField, InputAdornment, InputLabel, NativeSelect, IconButton } from '@material-ui/core'
 import SearchIcon from '@material-ui/icons/Search'
+import SortByAlphaIcon from '@material-ui/icons/SortByAlpha'
 import InfiniteScroll from 'react-infinite-scroller'
 import DeckItem from './Item'
 import { makeStyles } from '@material-ui/core/styles'
@@ -30,6 +31,32 @@ function filterCards(cards, searchTerms) {
   })
 }
 
+/**
+ * @param {Array} inCards
+ * @param {string} orderBy
+ * @param {bool} desc
+ */
+function orderCards(inCards, orderBy, desc) {
+  const cards = [...inCards]
+  function compare(a, b) {
+    if (a > b) { return 1 }
+    if (a < b) { return -1 }
+    return 0
+  }
+  switch (orderBy) {
+    case 'Front':
+    case 'Back':
+      cards.sort(([,a], [,b]) => compare(a[orderBy][0].c, b[orderBy][0].c))
+      break
+    default:
+      cards.sort(([,a], [,b]) => compare(a[orderBy], b[orderBy]))
+  }
+  if (desc) {
+    cards.reverse()
+  }
+  return cards
+}
+
 function useDebounce(fn, delay) {
   let timer = null
   return function() {
@@ -53,8 +80,18 @@ function Deck({ deck, getCards, saveCardInDeck, deleteCardInDeck, resetCardInDec
   const handleChangeFilter = (event) => {
     setSearchTerms(event.target.value)
   }
+  const [orderBy, setOrderBy] = useState('NextRepetition')
+  const handleChangeOrderBy = (event) => {
+    setOrderBy(event.target.value)
+    setOrderByDesc(false)
+  }
+  const [orderByDesc, setOrderByDesc] = useState(false)
+  const handleClickOrderByDesc = () => {
+    setOrderByDesc(dir => !dir)
+  }
 
-  const cards = useMemo(() => filterCards(Object.entries(deck.cards || {}), searchTerms), [deck, searchTerms])
+  const filteredCards = useMemo(() => filterCards(Object.entries(deck.cards || {}), searchTerms), [deck, searchTerms])
+  const cards = useMemo(() => orderCards(filteredCards, orderBy, orderByDesc), [filteredCards, orderBy, orderByDesc] )
 
   const cardsPerBatch = 8
   const [cardsLimit, setCardsLimit] = useState(cardsPerBatch)
@@ -97,6 +134,37 @@ function Deck({ deck, getCards, saveCardInDeck, deleteCardInDeck, resetCardInDec
               ),
             }}
           />
+        </Grid>
+        <Grid item xs={6}>
+          <InputLabel shrink htmlFor='order-select'>Order</InputLabel>
+          <NativeSelect
+            fullWidth
+            value={orderBy}
+            onChange={handleChangeOrderBy}
+            inputProps={{
+              name: 'age',
+              id: 'order-select',
+            }}
+            startAdornment={
+              <InputAdornment position='start'>
+                <IconButton
+                  aria-label='toggle order direction'
+                  onClick={handleClickOrderByDesc}
+                  edge='start'
+                >
+                  <SortByAlphaIcon />
+                </IconButton>
+              </InputAdornment>
+            }
+          >
+            <option value='CreatedAt'>Creation</option>
+            <option value='UpdatedAt'>Last rehearsal/update</option>
+            <option value='EasinessFactor'>Easiness factor</option>
+            <option value='PreviousInterval'>Last rehearse interval</option>
+            <option value='Front'>Front content</option>
+            <option value='Back'>Back content</option>
+            <option value='NextRepetition'>Next scheduled rehearsal</option>
+          </NativeSelect>
         </Grid>
       </Grid>
       <InfiniteScroll

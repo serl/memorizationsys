@@ -71,11 +71,11 @@ function CardHead({ card, handleReset, handleDelete }) {
       }
       title={
         <>
-          <Tooltip title='Easiness Factor' placement='top'>
+          <Tooltip title='Easiness factor' placement='top'>
             <span>{card.EasinessFactor}</span>
           </Tooltip>
           {bullet}
-          <Tooltip title='Interval' placement='top'>
+          <Tooltip title='Last rehearse interval' placement='top'>
             <span>{card.PreviousInterval}d</span>
           </Tooltip>
         </>
@@ -83,7 +83,7 @@ function CardHead({ card, handleReset, handleDelete }) {
       titleTypographyProps={{ variant: 'body1' }}
       subheader={
         <>
-          Next repetition: <DateOnly date={card.NextRepetition} />
+          Next scheduled rehearsal: <DateOnly date={card.NextRepetition} />
         </>
       }
       subheaderTypographyProps={{ variant: 'body2' }}
@@ -100,8 +100,8 @@ function CardFoot({ card, isBack, setFlipped, editing, handleEditStart, handleEd
   return (
     <>
       <CardContent>
-        <Typography variant='body2'>Created: <DateTime date={card.CreatedAt} /></Typography>
-        <Typography variant='body2'>Last updated: <DateTime date={card.UpdatedAt} /></Typography>
+        <Typography variant='body2'>Creation: <DateTime date={card.CreatedAt} /></Typography>
+        <Typography variant='body2'>Last rehearsal/update: <DateTime date={card.UpdatedAt} /></Typography>
       </CardContent>
       <CardActions>
         <Button variant='outlined' onClick={flipHandler}>{flipLabel}</Button>
