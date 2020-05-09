@@ -202,7 +202,7 @@ function DeckItem({ card: inputCard, saveCard, deleteCard, resetCard }) {
   )
 
   return (
-    <FlippingCard {...{ flipped, front, back }} />
+    <FlippingCard {...{ flipped, front, back }} highlight={card.NextRepetition < (new Date()).toISOString()} />
   )
 }
 

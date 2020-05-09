@@ -22,6 +22,7 @@ const useStyles = makeStyles(theme => ({
     overflow: 'unset',
     transform: props => props.flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
     height: props => props.flipped ? props.backHeight : props.frontHeight,
+    backgroundColor: props => props.highlight ? 'rgb(253, 247, 229)' : 'transparent',
   },
 
   side: {
@@ -38,7 +39,7 @@ const useStyles = makeStyles(theme => ({
   },
   back: {
     transform: 'rotateY(180deg)',
-    backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 15px, ${theme.palette.grey[200]} 15px, ${theme.palette.grey[200]} 20px)`,
+    backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 15px, rgba(0, 0, 0, 0.07) 15px, rgba(0, 0, 0, 0.07) 20px)',
   },
 }))
 
@@ -53,10 +54,10 @@ function useClientRect(contents) {
   return [rect, ref]
 }
 
-function FlippingCard({ flipped, front, back }) {
+function FlippingCard({ flipped, highlight, front, back }) {
   const [frontRect, frontRef] = useClientRect(front)
   const [backRect, backRef] = useClientRect(back)
-  const classes = useStyles({ flipped, frontHeight: frontRect.height, backHeight: backRect.height })
+  const classes = useStyles({ flipped, highlight, frontHeight: frontRect.height, backHeight: backRect.height })
   return (
     <div className={classes.root}>
       <Card className={classes.card}>
