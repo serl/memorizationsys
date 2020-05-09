@@ -30,10 +30,26 @@ function filterCards(cards, searchTerms) {
   })
 }
 
+function useDebounce(fn, delay) {
+  let timer = null
+  return function() {
+    const context = this, args = arguments
+    clearTimeout(timer)
+    timer = setTimeout(function() {
+      fn.apply(context, args)
+    }, delay)
+  }
+}
+
+function useDebounceState(initialValue, delay=300) {
+  const [value, setValue] = useState(initialValue)
+  return [value, useDebounce(setValue, delay)]
+}
+
 function Deck({ deck, getCards, saveCardInDeck, deleteCardInDeck, resetCardInDeck }) {
   useEffect(() => { deck.ID && getCards(deck.ID) }, [getCards, deck.ID])
 
-  const [searchTerms, setSearchTerms] = useState('')
+  const [searchTerms, setSearchTerms] = useDebounceState('')
   const handleChangeFilter = (event) => {
     setSearchTerms(event.target.value)
   }
@@ -69,7 +85,6 @@ function Deck({ deck, getCards, saveCardInDeck, deleteCardInDeck, resetCardInDec
       <Grid container spacing={3}>
         <Grid item xs={6}>
           <TextField
-            value={searchTerms}
             onChange={handleChangeFilter}
             type='search'
             label='Filter'
