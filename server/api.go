@@ -17,29 +17,29 @@ var deckRoute = regexp.MustCompile(`^decks/(\d+)$`)
 var deckCardsRoute = regexp.MustCompile(`^decks/(\d+)/cards/?$`)
 var deckCardRoute = regexp.MustCompile(`^decks/(\d+)/cards/(\d+)$`)
 
-func apiRouter(r *http.Request, u *User, tx *sqlx.Tx) apiResponse {
+func apiRouter(r *http.Request, ctx *Context) apiResponse {
 	if matches := decksRoute.FindStringSubmatch(r.URL.Path); matches != nil {
-		data, err := u.GetDecks(tx)
+		data, err := ctx.u.GetDecks(ctx.tx)
 		return CreateAPIResponse(http.StatusOK, data, err)
 	}
 	if matches := deckRoute.FindStringSubmatch(r.URL.Path); matches != nil {
 		deckID, _ := strconv.Atoi(matches[1])
-		data, err := u.GetDeck(tx, deckID)
+		data, err := ctx.u.GetDeck(ctx.tx, deckID)
 		return CreateAPIResponse(http.StatusOK, data, err)
 	}
 	if matches := deckCardsRoute.FindStringSubmatch(r.URL.Path); matches != nil {
 		deckID, _ := strconv.Atoi(matches[1])
-		deck, err := u.GetDeck(tx, deckID)
+		deck, err := ctx.u.GetDeck(ctx.tx, deckID)
 		if err != nil {
 			return CreateAPIError(err)
 		}
-		data, err := deck.GetCards(tx)
+		data, err := deck.GetCards(ctx.tx)
 		return CreateAPIResponse(http.StatusOK, data, err)
 	}
 	if matches := deckCardRoute.FindStringSubmatch(r.URL.Path); matches != nil {
 		deckID, _ := strconv.Atoi(matches[1])
 		cardID, _ := strconv.Atoi(matches[2])
-		card, err := GetCard(tx, cardID, u.ID)
+		card, err := GetCard(ctx.tx, cardID, ctx.u.ID)
 		if err != nil {
 			return CreateAPIError(err)
 		}
@@ -59,7 +59,11 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 
 	userID, _ := strconv.Atoi(r.Header.Get("X-User"))
 	err := WithUser(userID, func(u *User, tx *sqlx.Tx) error {
-		reply = apiRouter(r, u, tx)
+		ctx := &Context{
+			tx: tx,
+			u:  u,
+		}
+		reply = apiRouter(r, ctx)
 		rawToken, err := u.GenerateToken()
 		if err != nil {
 			return err
