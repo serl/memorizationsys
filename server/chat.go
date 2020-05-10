@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/getsentry/raven-go"
+	"github.com/getsentry/sentry-go"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/net/context"
 	"googlemaps.github.io/maps"
@@ -433,7 +433,7 @@ func HandleMessage(msg *tgbotapi.Message) {
 			return nil
 		}
 	}); err != nil {
-		raven.CaptureError(err, nil)
+		sentry.CaptureException(err)
 		Send(tgbotapi.NewMessage(msg.Chat.ID, err.Error()))
 	}
 }

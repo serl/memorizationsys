@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/getsentry/raven-go"
+	"github.com/getsentry/sentry-go"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -73,7 +73,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 	if reply.Error != nil && reply.Code == http.StatusInternalServerError {
 		log.Println(reply.Error)
 		debug.PrintStack()
-		raven.CaptureError(reply.Error, nil)
+		sentry.CaptureException(reply.Error)
 	}
 	reply.Token = token
 	SendResponse(reply, w)

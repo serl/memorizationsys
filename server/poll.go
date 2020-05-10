@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/getsentry/raven-go"
+	"github.com/getsentry/sentry-go"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
@@ -67,7 +67,7 @@ func Poller() {
 	for {
 		retry, err := poll()
 		if err != nil {
-			raven.CaptureError(err, nil)
+			sentry.CaptureException(err)
 		}
 		if !retry {
 			time.Sleep(10 * time.Second)
