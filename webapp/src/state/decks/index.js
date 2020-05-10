@@ -8,21 +8,29 @@ function arrayToObject(arr = []) {
   return obj
 }
 
+function bakeCard(card) {
+  card.Rehearsing = card.NextRepetition < (new Date()).toISOString()
+  return card
+}
+
 function deckReducer(state = {}, action) {
   switch (action.type) {
     case `${types.GET_CARDS}:COMPLETED`:
-      const now = (new Date()).toISOString()
-      let rehearsing = 0
-      const rawCards = action.payload.data.map(card => {
-        card.Rehearsing = card.NextRepetition < now
-        if (card.Rehearsing) {
-          rehearsing++
-        }
-        return card
-      })
-      return { ...state, cards: arrayToObject(rawCards), TotalCards: rawCards.length, CardsLeft: rehearsing }
-    case types.SAVE_CARD:
-      return { ...state, cards: { ...state.cards, [action.card.ID]: action.card } }
+      const rawCards = action.payload.data.map(bakeCard)
+      return {
+        ...state,
+        cards: arrayToObject(rawCards),
+        TotalCards: rawCards.length,
+        CardsLeft: rawCards.filter(c => c.Rehearsing).length,
+      }
+    case `${types.SAVE_CARD}:COMPLETED`:
+      return {
+        ...state,
+        cards: {
+          ...state.cards,
+          [action.meta.cardID]: bakeCard(action.payload.data),
+        },
+      }
     case types.DELETE_CARD:
       const cards = { ...state.cards }
       delete cards[action.id]
@@ -39,7 +47,7 @@ export default function (state = {}, action) {
     case `${types.GET_DECKS}:COMPLETED`:
       return arrayToObject(action.payload.data)
     case `${types.GET_CARDS}:COMPLETED`:
-    case types.SAVE_CARD:
+    case `${types.SAVE_CARD}:COMPLETED`:
     case types.DELETE_CARD:
     case types.RESET_CARD:
       const deckID = action.meta.deckID

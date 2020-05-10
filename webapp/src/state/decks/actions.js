@@ -32,9 +32,14 @@ export function getCards(deckID) {
 export function saveCardInDeck(deckID, card) {
   return {
     type: SAVE_CARD,
-    card,
     meta: {
+      async: true,
+      method: 'POST',
+      path: `/decks/${deckID}/cards/${card.ID}`,
+      body: card,
       deckID,
+      cardID: card.ID,
+      errorFormatter: payload => `Error while saving card ${card.Front[0].c}: ${payload.code} ${payload.result}`,
     },
   }
 }

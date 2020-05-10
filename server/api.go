@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"regexp"
@@ -45,6 +46,34 @@ func apiRouter(r *http.Request, ctx *Context) apiResponse {
 		}
 		if card.DeckID != deckID {
 			return errAPINotFound
+		}
+		if r.Method == http.MethodPost {
+			var newCard Card
+			json.NewDecoder(r.Body).Decode(&newCard)
+
+			err = ctx.tx.Get(card, `UPDATE cards
+				SET
+					front = $2,
+					back = $3,
+					easiness_factor = $4,
+					previous_interval = $5,
+					repetition = $6,
+					next_repetition = $7
+				WHERE
+					id = $1
+				RETURNING *`,
+				card.ID,
+				newCard.Front,
+				newCard.Back,
+				newCard.EasinessFactor,
+				newCard.PreviousInterval,
+				newCard.Repetition,
+				newCard.NextRepetition,
+			)
+
+			if err != nil {
+				return CreateAPIError(err)
+			}
 		}
 		return CreateAPIResponse(http.StatusOK, card, nil)
 	}
