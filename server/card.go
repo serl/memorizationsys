@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"time"
 
-	"./sm"
 	"github.com/jmoiron/sqlx"
 	"github.com/jmoiron/sqlx/types"
+	"github.com/serl/memorizationsys/server/sm"
 )
 
 type Card struct {

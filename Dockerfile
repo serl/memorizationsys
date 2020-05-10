@@ -1,24 +1,18 @@
-FROM golang:1.12-alpine as gobuilder
+FROM golang:1.14-alpine as gobuilder
 
 RUN apk add --no-cache git
-RUN go get \
-  "golang.org/x/net/context" \
-  "github.com/jmoiron/sqlx" \
-  "github.com/jmoiron/sqlx/types" \
-  "github.com/getsentry/raven-go" \
-  "googlemaps.github.io/maps" \
-  "gopkg.in/telegram-bot-api.v4" \
-  "github.com/facebookgo/grace/gracehttp" \
-  "github.com/lib/pq" \
-  "github.com/pascaldekloe/jwt"
 
-COPY ./server /go/
-WORKDIR /go
+WORKDIR /app
+COPY go.mod go.sum /app/
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o main .
+RUN go mod download -x && go mod verify
+
+COPY server /app/server
+
+RUN cd server && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o main .
 
 
-FROM node:12-alpine as jsbuilder
+FROM node:14-alpine as jsbuilder
 
 WORKDIR /webapp
 
@@ -34,7 +28,7 @@ FROM alpine
 
 RUN apk add --no-cache curl
 
-COPY --from=gobuilder /go/main /usr/local/bin
+COPY --from=gobuilder /app/server/main /usr/local/bin
 COPY server/webhook-dog.sh /usr/local/bin
 COPY --from=jsbuilder /webapp/build /site
 
