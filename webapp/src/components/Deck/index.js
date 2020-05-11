@@ -106,7 +106,7 @@ function Deck({ deck, getCards, saveCardInDeck, deleteCardInDeck, resetCardInDec
   )
 
   const saveCard = useCallback(card => saveCardInDeck(deck.ID, card), [saveCardInDeck, deck])
-  const deleteCard = useCallback(cardID => deleteCardInDeck(deck.ID, cardID), [deleteCardInDeck, deck])
+  const deleteCard = useCallback(card => deleteCardInDeck(deck.ID, card), [deleteCardInDeck, deck])
   const resetCard = useCallback(card => resetCardInDeck(deck.ID, card), [resetCardInDeck, deck])
 
   const classes = useStyles()

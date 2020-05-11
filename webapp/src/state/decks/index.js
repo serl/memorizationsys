@@ -31,9 +31,9 @@ function deckReducer(state = {}, action) {
           [action.meta.cardID]: bakeCard(action.payload.data),
         },
       }
-    case types.DELETE_CARD:
+    case `${types.DELETE_CARD}:COMPLETED`:
       const cards = { ...state.cards }
-      delete cards[action.id]
+      delete cards[action.meta.cardID]
       return { ...state, cards }
     default:
       return state
@@ -46,7 +46,7 @@ export default function (state = {}, action) {
       return arrayToObject(action.payload.data)
     case `${types.GET_CARDS}:COMPLETED`:
     case `${types.SAVE_CARD}:COMPLETED`:
-    case types.DELETE_CARD:
+    case `${types.DELETE_CARD}:COMPLETED`:
       const deckID = action.meta.deckID
       return { ...state, [deckID]: deckReducer(state[deckID], action) }
     default:

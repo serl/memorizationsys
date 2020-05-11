@@ -50,7 +50,7 @@ function CardHead({ card, handleReset, handleDelete }) {
     },
     {
       name: 'Delete',
-      action: () => handleDelete(card.ID),
+      action: () => handleDelete(card),
     },
   ]
 
@@ -169,9 +169,9 @@ function DeckItem({ card: inputCard, saveCard, deleteCard, resetCard }) {
     resetCard(card)
   }
 
-  const handleDelete = cardID => {
+  const handleDelete = card => {
     editing && handleEditCancel()
-    deleteCard(cardID)
+    deleteCard(card)
   }
 
   const cardHead = <CardHead {...{ card, handleReset, handleDelete }} />

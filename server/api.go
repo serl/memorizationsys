@@ -70,10 +70,13 @@ func apiRouter(r *http.Request, ctx *Context) apiResponse {
 				newCard.Repetition,
 				newCard.NextRepetition,
 			)
+		}
+		if r.Method == http.MethodDelete {
+			err = card.Delete(ctx.tx)
+		}
 
-			if err != nil {
-				return CreateAPIError(err)
-			}
+		if err != nil {
+			return CreateAPIError(err)
 		}
 		return CreateAPIResponse(http.StatusOK, card, nil)
 	}

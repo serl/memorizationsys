@@ -43,12 +43,16 @@ export function saveCardInDeck(deckID, card) {
   }
 }
 
-export function deleteCardInDeck(deckID, id) {
+export function deleteCardInDeck(deckID, card) {
   return {
     type: DELETE_CARD,
-    id,
     meta: {
+      async: true,
+      method: 'DELETE',
+      path: `/decks/${deckID}/cards/${card.ID}`,
       deckID,
+      cardID: card.ID,
+      errorFormatter: payload => `Error while deleting card ${card.Front[0].c}: ${payload.code} ${payload.result}`,
     },
   }
 }
