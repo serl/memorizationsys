@@ -4,7 +4,6 @@ export const GET_CARDS = 'GET_CARDS'
 
 export const SAVE_CARD = 'SAVE_CARD'
 export const DELETE_CARD = 'DELETE_CARD'
-export const RESET_CARD = 'RESET_CARD'
 
 export function getDecks() {
   return {
@@ -54,12 +53,15 @@ export function deleteCardInDeck(deckID, id) {
   }
 }
 
-export function resetCardInDeck(deckID, id) {
-  return {
-    type: RESET_CARD,
-    id,
-    meta: {
-      deckID,
+export function resetCardInDeck(deckID, card) {
+  return saveCardInDeck(
+    deckID,
+    {
+      ...card,
+      EasinessFactor: 250,
+      PreviousInterval: 0,
+      Repetition: 1,
+      NextRepetition: new Date(),
     },
-  }
+  )
 }

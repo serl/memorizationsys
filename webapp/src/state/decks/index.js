@@ -35,8 +35,6 @@ function deckReducer(state = {}, action) {
       const cards = { ...state.cards }
       delete cards[action.id]
       return { ...state, cards }
-    case types.RESET_CARD:
-      return state
     default:
       return state
   }
@@ -49,7 +47,6 @@ export default function (state = {}, action) {
     case `${types.GET_CARDS}:COMPLETED`:
     case `${types.SAVE_CARD}:COMPLETED`:
     case types.DELETE_CARD:
-    case types.RESET_CARD:
       const deckID = action.meta.deckID
       return { ...state, [deckID]: deckReducer(state[deckID], action) }
     default:
