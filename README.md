@@ -8,6 +8,7 @@ Things added:
 * If you manage to successfully write the back of the card, it will be interpreted as 'recalled' (or if your reply does not match perfectly, 'show back').
 * Always show the total number of cards in deck (even when there are no cards to review).
 * APIs!
+* Webapp!
 
 ## Host locally with `docker-compose`
 
