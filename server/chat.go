@@ -34,12 +34,12 @@ func HandleMessage(msg *tgbotapi.Message) {
 			return u.SetAndShowState(c, DeckList, nil)
 		} else if strings.HasPrefix(msg.Text, "/help") {
 			return u.State.Show(c)
+		} else if strings.HasPrefix(msg.Text, "/web") || strings.HasPrefix(msg.Text, "/start web") {
+			return u.SetAndShowState(c, AskForWebApp, nil)
 		} else if strings.HasPrefix(msg.Text, "/start") {
 			return u.SetAndShowState(c, UserSetup, nil)
 		} else if strings.HasPrefix(msg.Text, "/settings") {
 			return u.SetAndShowState(c, Settings, nil)
-		} else if strings.HasPrefix(msg.Text, "/web") {
-			return u.SetAndShowState(c, AskForWebApp, nil)
 		}
 
 		switch u.State {

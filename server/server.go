@@ -6,6 +6,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -151,6 +152,14 @@ func main() {
 	if err := readSecrets(); err != nil {
 		sentry.CaptureException(err)
 		log.Fatal(err)
+	}
+
+	if Configuration.ServeSite {
+		staticJS := []byte("window.botUserName = '" + BotAPI.Self.UserName + "'\n")
+		if err := ioutil.WriteFile("site/static.js", staticJS, 0644); err != nil {
+			sentry.CaptureException(err)
+			log.Fatal(err)
+		}
 	}
 
 	sentryHandler := sentryhttp.New(sentryhttp.Options{
