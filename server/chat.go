@@ -38,8 +38,8 @@ func HandleMessage(msg *tgbotapi.Message) {
 			return u.SetAndShowState(c, UserSetup, nil)
 		} else if strings.HasPrefix(msg.Text, "/settings") {
 			return u.SetAndShowState(c, Settings, nil)
-		} else if strings.HasPrefix(msg.Text, "/token") {
-			return u.SetAndShowState(c, AskForToken, nil)
+		} else if strings.HasPrefix(msg.Text, "/web") {
+			return u.SetAndShowState(c, AskForWebApp, nil)
 		}
 
 		switch u.State {
@@ -426,8 +426,6 @@ func HandleMessage(msg *tgbotapi.Message) {
 				reply("I don't understand what you mean, please try again.", nil)
 			}
 			return u.SetAndShowState(c, Settings, nil)
-		case AskForToken:
-			return u.SetAndShowState(c, DeckList, nil)
 		default:
 			reply("You're in a weird state", noKeyboard)
 			return nil
