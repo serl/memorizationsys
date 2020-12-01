@@ -8,6 +8,7 @@ Things added:
 * If you manage to successfully write the back of the card, it will be interpreted as 'recalled' (or if your reply does not match perfectly, 'show back').
 * Always show the total number of cards in deck (even when there are no cards to review).
 * APIs!
+* Webapp!
 
 ## Host locally with `docker-compose`
 
@@ -15,7 +16,7 @@ Note: you'll need to have a HTTPS gateway for the Telegram API.
 Exposing the HTTP server as-is to the Telegram servers will NOT work.
 
 * Copy `.env.sample` to `.env` and follow the instructions.
-* `docker-compose up`.
+* `docker-compose up --build`.
 * You'll have your bot server listening on port 8000.
 * Register the webhook to activate the bot by visiting `http://localhost:8000/telegram/register_webhook/$BOT_TOKEN`.
 * Access the database with `docker-compose exec db psql -U postgres`.

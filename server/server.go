@@ -6,6 +6,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -13,7 +14,8 @@ import (
 	"time"
 
 	"github.com/facebookgo/grace/gracehttp"
-	"github.com/getsentry/raven-go"
+	"github.com/getsentry/sentry-go"
+	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/pascaldekloe/jwt"
@@ -138,14 +140,36 @@ func createHandler() http.Handler {
 }
 
 func main() {
+	err := sentry.Init(sentry.ClientOptions{
+		Dsn:         os.Getenv("SENTRY_DSN"),
+		Environment: os.Getenv("SENTRY_ENVIRONMENT"),
+	})
+
+	if err != nil {
+		log.Printf("Sentry initialization failed: %v\n", err)
+	}
+
 	if err := readSecrets(); err != nil {
-		raven.CaptureError(err, nil)
+		sentry.CaptureException(err)
 		log.Fatal(err)
 	}
 
+	if Configuration.ServeSite {
+		staticJS := []byte("window.botUserName = '" + BotAPI.Self.UserName + "'\n")
+		if err := ioutil.WriteFile("site/static.js", staticJS, 0644); err != nil {
+			sentry.CaptureException(err)
+			log.Fatal(err)
+		}
+	}
+
+	sentryHandler := sentryhttp.New(sentryhttp.Options{
+		Repanic:         false,
+		WaitForDelivery: true,
+	})
+
 	httpServer := &http.Server{
 		Addr:    ":" + Configuration.Port,
-		Handler: raven.Recoverer(createHandler()),
+		Handler: sentryHandler.Handle(createHandler()),
 	}
 
 	go Poller()

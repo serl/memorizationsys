@@ -79,7 +79,7 @@ const (
 
 	SetRehearsalTime
 
-	AskForToken
+	AskForWebApp
 
 	stateCount
 )
@@ -328,23 +328,17 @@ func (s State) Show(c *Context) error {
 			"Please select your preferred time of day to rehearse. You can also type out the time yourself.",
 			keyboard,
 		)
-	case AskForToken:
+	case AskForWebApp:
 		token, err := u.GenerateToken()
 		if err != nil {
 			return err
 		}
 		replyMessage := "Token generation disabled"
 		if token != nil {
-			replyMessage = string(token)
+			replyMessage = "https://" + Configuration.Hostname + "/#[" + string(token) + "]"
 		}
-		reply(
-			replyMessage,
-			tgbotapi.NewReplyKeyboard(
-				tgbotapi.NewKeyboardButtonRow(
-					tgbotapi.NewKeyboardButton(Back),
-				),
-			),
-		)
+		reply(replyMessage, nil)
+		return u.SetAndShowState(c, DeckList, nil)
 	}
 	return nil
 }

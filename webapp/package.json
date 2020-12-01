@@ -1,0 +1,80 @@
+{
+  "name": "memorizationsys-webapp",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@material-ui/core": "^4.9.14",
+    "@material-ui/icons": "^4.9.1",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-infinite-scroller": "^1.2.4",
+    "react-redux": "^7.2.0",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "^3.4.1",
+    "redux": "^4.0.5",
+    "redux-logger": "^3.0.6",
+    "redux-thunk": "^2.3.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "proxy": "https://memorizationsys.herokuapp.com/",
+  "eslintConfig": {
+    "extends": "react-app",
+    "rules": {
+      "comma-dangle": [
+        1,
+        "always-multiline"
+      ],
+      "semi": [
+        1,
+        "never"
+      ],
+      "quotes": [
+        1,
+        "single"
+      ],
+      "jsx-quotes": [
+        1,
+        "prefer-single"
+      ],
+      "eol-last": 1,
+      "prefer-const": 1,
+      "no-irregular-whitespace": 2,
+      "curly": 1,
+      "brace-style": [
+        1,
+        "1tbs",
+        {
+          "allowSingleLine": true
+        }
+      ],
+      "dot-notation": [
+        1,
+        {
+          "allowKeywords": false
+        }
+      ],
+      "no-useless-return": 2,
+      "no-lonely-if": 1,
+      "no-var": 2,
+      "prefer-template": 1,
+      "template-curly-spacing": 1
+    }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
