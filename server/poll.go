@@ -50,6 +50,7 @@ func poll() (bool, error) {
 			),
 			tgbotapi.NewKeyboardButtonRow(
 				tgbotapi.NewKeyboardButton(EditCard),
+				tgbotapi.NewKeyboardButton(SkipCard),
 				tgbotapi.NewKeyboardButton(ShowReverseOfCard),
 			),
 		)

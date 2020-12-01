@@ -53,8 +53,8 @@ RETURNS SETOF cards AS $$
    d.scheduled AND
    c.next_repetition <= u.date_in_time_zone
   ORDER BY
-   c.next_repetition ASC,
    c.repetition_today ASC,
+   c.next_repetition ASC,
    c.random_order ASC
   LIMIT 1;
 $$ LANGUAGE SQL;
