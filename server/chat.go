@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"time"
 
@@ -53,7 +54,9 @@ func HandleMessage(msg *tgbotapi.Message) {
 			} else if msg.Text == EditSettings {
 				return u.SetAndShowState(c, Settings, nil)
 			}
-			deck, err := u.GetDeckByName(tx, msg.Text)
+			deckRegex := regexp.MustCompile(`^(.+?)(?: \[\d+\])?$`)
+			deckName := deckRegex.FindStringSubmatch(msg.Text)[1]
+			deck, err := u.GetDeckByName(tx, deckName)
 			if err != nil {
 				return err
 			}

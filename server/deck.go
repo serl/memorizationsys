@@ -17,6 +17,12 @@ type Deck struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
+type DeckWithStats struct {
+	Deck
+	TotalCards int `db:"total_cards"`
+	CardsLeft  int `db:"cards_left"`
+}
+
 func (d *Deck) Delete(tx *sqlx.Tx) error {
 	_, err := tx.Exec("DELETE FROM decks WHERE id=$1", d.ID)
 	return err

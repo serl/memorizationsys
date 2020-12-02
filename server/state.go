@@ -113,8 +113,12 @@ func (s State) Show(c *Context) error {
 			)
 		} else {
 			for _, deck := range decks {
+				deckLabel := deck.Name
+				if deck.CardsLeft > 0 {
+					deckLabel = fmt.Sprintf("%s [%d]", deck.Name, deck.CardsLeft)
+				}
 				keyboard.Keyboard = append(keyboard.Keyboard, tgbotapi.NewKeyboardButtonRow(
-					tgbotapi.NewKeyboardButton(deck.Name),
+					tgbotapi.NewKeyboardButton(deckLabel),
 				))
 			}
 			reply("Select the deck you want to work on.", keyboard)

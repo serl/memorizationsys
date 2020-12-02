@@ -25,9 +25,17 @@ type User struct {
 	Scheduled     bool           `db:"scheduled"`
 }
 
-func (u *User) GetDecks(tx *sqlx.Tx) ([]Deck, error) {
-	decks := []Deck{}
-	err := tx.Select(&decks, "SELECT * FROM decks WHERE user_id=$1 ORDER BY name ASC", u.ID)
+func (u *User) GetDecks(tx *sqlx.Tx) ([]DeckWithStats, error) {
+	decks := []DeckWithStats{}
+	err := tx.Select(&decks, `SELECT
+ d.*,
+ COUNT(c.*) AS total_cards,
+ COUNT(CASE WHEN next_repetition <= date_in_time_zone($1) THEN TRUE END) AS cards_left
+FROM decks d
+LEFT JOIN cards c ON (d.id = c.deck_id)
+WHERE user_id=$2
+GROUP BY d.id
+ORDER BY cards_left DESC, name ASC`, u.TimeZone, u.ID)
 	return decks, err
 }
 
@@ -45,11 +53,7 @@ func (u *User) GetDeck(tx *sqlx.Tx, id int) (*Deck, error) {
 
 // return deck, total_cards, cards_left
 func (u *User) GetDeckWithStats(tx *sqlx.Tx, id int) (*Deck, int, int, error) {
-	var result struct {
-		Deck
-		TotalCards int `db:"total_cards"`
-		CardsLeft  int `db:"cards_left"`
-	}
+	var result DeckWithStats
 	err := tx.Get(&result, `WITH deck AS (SELECT * FROM cards WHERE deck_id=$3)
  SELECT
  (SELECT COUNT(*) FROM deck) AS total_cards,
