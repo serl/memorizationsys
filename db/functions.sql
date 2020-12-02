@@ -59,38 +59,6 @@ RETURNS SETOF cards AS $$
   LIMIT 1;
 $$ LANGUAGE SQL;
 
-CREATE OR REPLACE FUNCTION scheduled_cards_to_send()
-RETURNS TABLE(user_id INTEGER, card_id INTEGER) AS $$
-DECLARE x RECORD;
-BEGIN
-  FOR x IN
-    UPDATE users u
-    SET
-      rehearsal = u.next_rehearsal
-    FROM (
-      SELECT id
-      FROM users
-      WHERE
-        rehearsal <= NOW() AND
-        scheduled AND
-        updated_at < NOW() - INTERVAL '30 minutes'
-      LIMIT 20
-      FOR UPDATE SKIP LOCKED
-    ) subset
-    WHERE u.id = subset.id
-    RETURNING u.id
-   LOOP
-    SELECT f.id INTO card_id FROM scheduled_card_for_user(x.id) f;
-
-    IF card_id IS NOT NULL THEN
-      user_id = x.id;
-      UPDATE users uu SET state = 1, data = '{}' WHERE uu.id = x.id;
-      RETURN NEXT;
-    END IF;
-  END LOOP;
-END;
-$$ language 'plpgsql';
-
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE update_updated_at();
 CREATE TRIGGER update_decks_updated_at BEFORE UPDATE ON decks FOR EACH ROW EXECUTE PROCEDURE update_updated_at();
 CREATE TRIGGER update_cards_updated_at BEFORE UPDATE ON cards FOR EACH ROW EXECUTE PROCEDURE update_updated_at();
