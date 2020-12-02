@@ -102,6 +102,9 @@ func HandleMessage(msg *tgbotapi.Message) {
 				return u.SetAndShowState(c, CardEdit, &Data{CardID: card.ID})
 			case ShowReverseOfCard:
 				return u.SetAndShowState(c, RehearsingCardReview, nil)
+			case SkipCard:
+				card.Skip(c)
+				return Rehearsing.Show(c)
 			default:
 				messages, err := card.GetBack()
 				if err != nil {
@@ -138,6 +141,12 @@ func HandleMessage(msg *tgbotapi.Message) {
 				return u.SetAndShowState(c, CardEdit, &Data{CardID: card.ID})
 			case ShowReverseOfCard:
 				return u.SetAndShowState(c, CardReview, &data)
+			case SkipCard:
+				card, err := deck.GetCardForReview(c)
+				if err == nil {
+					card.Skip(c)
+				}
+				return DeckDetails.Show(c)
 			default:
 				card, err := deck.GetCardForReview(c)
 				if err != nil {

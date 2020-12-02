@@ -135,6 +135,7 @@ func (s State) Show(c *Context) error {
 				),
 				tgbotapi.NewKeyboardButtonRow(
 					tgbotapi.NewKeyboardButton(EditCard),
+					tgbotapi.NewKeyboardButton(SkipCard),
 					tgbotapi.NewKeyboardButton(ShowReverseOfCard),
 				),
 			)
@@ -174,6 +175,7 @@ func (s State) Show(c *Context) error {
 			keyboard.Keyboard = append(keyboard.Keyboard,
 				tgbotapi.NewKeyboardButtonRow(
 					tgbotapi.NewKeyboardButton(EditCard),
+					tgbotapi.NewKeyboardButton(SkipCard),
 					tgbotapi.NewKeyboardButton(ShowReverseOfCard),
 				),
 			)

@@ -98,6 +98,18 @@ RETURNING *`,
 	)
 }
 
+func (c *Card) Skip(context *Context) error {
+	return context.tx.Get(c, `UPDATE cards
+SET
+ repetition_today=$1
+WHERE
+ id=$2
+RETURNING *`,
+		c.RepetitionToday+1,
+		c.ID,
+	)
+}
+
 func (c *Card) SendFront(userID int, keyboard interface{}) error {
 	messages, err := c.GetFront()
 	if err != nil {

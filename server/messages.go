@@ -33,6 +33,7 @@ const (
 	OK                         = "🆗"
 	Save                       = "💾"
 	ShowReverseOfCard          = "🔄 Show back"
+	SkipCard                   = "⏭ Skip card"
 )
 
 var (

@@ -44,8 +44,8 @@ WHERE
  deck_id=$1 AND
  next_repetition <= date_in_time_zone($2)
 ORDER BY
- next_repetition ASC,
  repetition_today ASC,
+ next_repetition ASC,
  random_order ASC
 LIMIT 1`, d.ID, c.u.TimeZone)
 	return &card, err
