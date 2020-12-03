@@ -22,11 +22,6 @@ const (
 	// Also has settings and donate buttons or something.
 	DeckList = State(iota)
 
-	// Going through all the cards that need to be rehearsed
-	Rehearsing
-
-	RehearsingCardReview
-
 	// Create a new deck. Simply takes in a reply for the deck name
 	DeckCreate
 
@@ -123,29 +118,6 @@ func (s State) Show(c *Context) error {
 			}
 			reply("Select the deck you want to work on.", keyboard)
 		}
-	case Rehearsing:
-		card, err := u.GetScheduledCard(tx)
-		if err != nil {
-			return err
-		}
-
-		if card == nil {
-			reply("Done with rehearsal for today!", nil)
-			return u.SetAndShowState(c, DeckList, nil)
-		} else {
-			keyboard := tgbotapi.NewReplyKeyboard(
-				tgbotapi.NewKeyboardButtonRow(
-					tgbotapi.NewKeyboardButton(Back),
-				),
-				tgbotapi.NewKeyboardButtonRow(
-					tgbotapi.NewKeyboardButton(EditCard),
-					tgbotapi.NewKeyboardButton(SkipCard),
-					tgbotapi.NewKeyboardButton(ShowReverseOfCard),
-				),
-			)
-			card.SendFront(u.ID, keyboard)
-			return nil
-		}
 	case DeckDetails:
 		deck, totalCards, cardsLeft, err := u.GetDeckWithStats(tx, data.DeckID)
 		if err != nil {
@@ -221,13 +193,6 @@ func (s State) Show(c *Context) error {
 		return card.SendBack(u.ID, nil)
 	case DeckCreate:
 		reply("What's the name of the new deck?", noKeyboard)
-	case RehearsingCardReview:
-		card, err := u.GetScheduledCard(tx)
-		if err != nil {
-			return err
-		}
-		card.SendBack(int(c.from), CardReplyKeyboard)
-		return nil
 	case CardReview:
 		deck, err := u.GetDeck(tx, data.DeckID)
 		if err != nil {

@@ -41,24 +41,6 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE OR REPLACE FUNCTION scheduled_card_for_user(id INTEGER)
-RETURNS SETOF cards AS $$
-  SELECT
-    c.*
-  FROM cards c
-  INNER JOIN decks d ON c.deck_id = d.id
-  INNER JOIN users u ON d.user_id = u.id
-  WHERE
-   d.user_id=$1 AND
-   d.scheduled AND
-   c.next_repetition <= u.date_in_time_zone
-  ORDER BY
-   c.repetition_today ASC,
-   c.next_repetition ASC,
-   c.random_order ASC
-  LIMIT 1;
-$$ LANGUAGE SQL;
-
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE update_updated_at();
 CREATE TRIGGER update_decks_updated_at BEFORE UPDATE ON decks FOR EACH ROW EXECUTE PROCEDURE update_updated_at();
 CREATE TRIGGER update_cards_updated_at BEFORE UPDATE ON cards FOR EACH ROW EXECUTE PROCEDURE update_updated_at();

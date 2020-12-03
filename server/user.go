@@ -129,17 +129,6 @@ func (u *User) CreateDeck(tx *sqlx.Tx, name string) (*Deck, error) {
 	return &deck, err
 }
 
-func (u *User) GetScheduledCard(tx *sqlx.Tx) (*Card, error) {
-	var card Card
-	err := tx.Get(&card, "SELECT * FROM scheduled_card_for_user($1)", u.ID)
-
-	if err == sql.ErrNoRows {
-		return nil, nil
-	} else {
-		return &card, err
-	}
-}
-
 func (u *User) GenerateToken() ([]byte, error) {
 	if Secrets.JWTPrivateKey == nil {
 		return nil, nil

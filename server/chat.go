@@ -88,42 +88,6 @@ func HandleMessage(msg *tgbotapi.Message) {
 					return u.SetAndShowState(c, DeckDetails, &Data{DeckID: deck.ID})
 				}
 			}
-		case Rehearsing:
-			card, err := u.GetScheduledCard(tx)
-			if err != nil {
-				return err
-			}
-
-			if card == nil {
-				return u.SetAndShowState(c, DeckList, nil)
-			}
-
-			switch msg.Text {
-			case Back:
-				return u.SetAndShowState(c, DeckList, nil)
-			case EditCard:
-				return u.SetAndShowState(c, CardEdit, &Data{CardID: card.ID})
-			case ShowReverseOfCard:
-				return u.SetAndShowState(c, RehearsingCardReview, nil)
-			case SkipCard:
-				card.Skip(c)
-				return Rehearsing.Show(c)
-			default:
-				messages, err := card.GetBack()
-				if err != nil {
-					return err
-				}
-				if messages[0].Text == msg.Text {
-					err = card.Respond(c, 2)
-					if err != nil {
-						return err
-					}
-				} else {
-					// show back
-					return u.SetAndShowState(c, RehearsingCardReview, nil)
-				}
-				return Rehearsing.Show(c)
-			}
 		case DeckDetails:
 			deck, err := u.GetDeck(tx, data.DeckID)
 			if err != nil {
@@ -291,31 +255,6 @@ func HandleMessage(msg *tgbotapi.Message) {
 			}
 			reply("Card updated", nil)
 			return u.SetAndShowState(c, DeckDetails, &Data{DeckID: card.DeckID})
-		case RehearsingCardReview:
-			card, err := u.GetScheduledCard(tx)
-
-			switch msg.Text {
-			case Back:
-				return u.SetAndShowState(c, DeckDetails, &Data{DeckID: card.DeckID})
-			case EditCard:
-				return u.SetAndShowState(c, CardEdit, &Data{CardID: card.ID})
-			case Difficulty0:
-				err = card.Respond(c, 0)
-			case Difficulty1:
-				err = card.Respond(c, 1)
-			case Difficulty2:
-				err = card.Respond(c, 2)
-			case Difficulty3:
-				err = card.Respond(c, 3)
-			default:
-				return RehearsingCardReview.Show(c)
-			}
-
-			if err != nil {
-				return err
-			}
-
-			return u.SetAndShowState(c, Rehearsing, nil)
 		case CardReview:
 			deck, err := u.GetDeck(tx, data.DeckID)
 			if err != nil {
