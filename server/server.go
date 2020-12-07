@@ -44,6 +44,12 @@ var (
 		MapsAPIKey               string
 		JWTPrivateKey            *ecdsa.PrivateKey
 	}
+
+	PollerConfiguration struct {
+		PollEvery            time.Duration
+		BatchSize            int
+		InactiveSinceMinutes int
+	}
 )
 
 func Send(c tgbotapi.Chattable) (tgbotapi.Message, error) {
@@ -104,6 +110,11 @@ func readSecrets() error {
 	if err != nil {
 		return err
 	}
+
+	PollerConfiguration.PollEvery = 10 * time.Minute
+	PollerConfiguration.BatchSize = 20
+	PollerConfiguration.InactiveSinceMinutes = 30
+
 	_, err = DB.Query("SET search_path TO srsbot")
 	return err
 }

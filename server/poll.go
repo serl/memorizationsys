@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -15,50 +16,58 @@ func poll() (bool, error) {
 		tx.Rollback()
 		return false, err
 	}
-	rows, err := tx.Queryx("SELECT user_id, card_id FROM scheduled_cards_to_send()")
+
+	users := []User{}
+	err = tx.Select(&users, fmt.Sprintf(`UPDATE users u
+SET rehearsal = u.next_rehearsal
+FROM (
+ SELECT id
+ FROM users
+ WHERE
+  rehearsal <= NOW() AND
+  scheduled AND
+  updated_at < NOW() - INTERVAL '%d minutes'
+ LIMIT %d
+ FOR UPDATE SKIP LOCKED
+) subset
+WHERE u.id = subset.id
+RETURNING u.*`, PollerConfiguration.InactiveSinceMinutes, PollerConfiguration.BatchSize))
 	if err != nil {
 		log.Print(err)
 		tx.Rollback()
 		return false, err
 	}
-	users := make([]int, 0, 20)
-	cards := make([]int, 0, 20)
-	for rows.Next() {
-		var userID, cardID int
-		err = rows.Scan(&userID, &cardID)
+	log.Printf("Polling for rehearsal notifications, got %d users for a batch of %d", len(users), PollerConfiguration.BatchSize)
+
+	for _, user := range users {
+		var hasCards bool
+		err = tx.Get(&hasCards, `SELECT count(*) > 0
+FROM cards c
+INNER JOIN decks d ON c.deck_id = d.id
+INNER JOIN users u ON d.user_id = u.id
+WHERE
+ u.id=$1 AND
+ d.scheduled AND
+ c.next_repetition <= u.date_in_time_zone
+LIMIT 1`, user.ID)
 		if err != nil {
 			log.Print(err)
 			tx.Rollback()
 			return false, err
 		}
-		users = append(users, userID)
-		cards = append(cards, cardID)
-	}
 
-	for i := 0; i < len(users); i++ {
-		userID := users[i]
-		cardID := cards[i]
-		card, err := GetCard(tx, cardID, userID)
-		if err != nil {
-			log.Print(err)
-			continue
+		if hasCards {
+			log.Printf("Sending rehearsal notification to %d", user.ID)
+			ctx := &Context{
+				tx:   tx,
+				u:    &user,
+				from: int64(user.ID),
+			}
+			Send(tgbotapi.NewMessage(ctx.from, "Time for your rehearsal!"))
+			user.SetAndShowState(ctx, DeckList, nil)
+		} else {
+			log.Printf("User %d has no cards to rehearse", user.ID)
 		}
-
-		keyboard := tgbotapi.NewReplyKeyboard(
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton(Back),
-			),
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton(EditCard),
-				tgbotapi.NewKeyboardButton(SkipCard),
-				tgbotapi.NewKeyboardButton(ShowReverseOfCard),
-			),
-		)
-
-		go func() {
-			Send(tgbotapi.NewMessage(int64(userID), "Time for your rehearsal!"))
-			card.SendFront(userID, keyboard)
-		}()
 	}
 	tx.Commit()
 	return len(users) > 0, nil
@@ -71,7 +80,7 @@ func Poller() {
 			sentry.CaptureException(err)
 		}
 		if !retry {
-			time.Sleep(10 * time.Second)
+			time.Sleep(PollerConfiguration.PollEvery)
 		}
 	}
 }
