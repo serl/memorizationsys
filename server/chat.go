@@ -126,9 +126,11 @@ func HandleMessage(msg *tgbotapi.Message) {
 				}
 				if messages[0].Text == msg.Text {
 					err = card.Respond(c, 2)
+					replyMessage := fmt.Sprintf("👍 Good!\n%s", card.NextRepetitionText())
 					if err != nil {
 						return err
 					}
+					reply(replyMessage, nil)
 				} else {
 					// show back
 					return u.SetAndShowState(c, CardReview, &data)
@@ -266,6 +268,8 @@ func HandleMessage(msg *tgbotapi.Message) {
 				return err
 			}
 
+			replyMessage := ""
+
 			switch msg.Text {
 			case Back:
 				return u.SetAndShowState(c, DeckDetails, &Data{DeckID: card.DeckID})
@@ -277,8 +281,10 @@ func HandleMessage(msg *tgbotapi.Message) {
 				err = card.Respond(c, 1)
 			case Difficulty2:
 				err = card.Respond(c, 2)
+				replyMessage = fmt.Sprintf("👍 All right!\n%s", card.NextRepetitionText())
 			case Difficulty3:
 				err = card.Respond(c, 3)
+				replyMessage = fmt.Sprintf("💯 Very good!\n%s", card.NextRepetitionText())
 			default:
 				return CardReview.Show(c)
 			}
@@ -287,6 +293,9 @@ func HandleMessage(msg *tgbotapi.Message) {
 				return err
 			}
 
+			if replyMessage != "" {
+				reply(replyMessage, nil)
+			}
 			return u.SetAndShowState(c, DeckDetails, &data)
 		case SetTimeZone:
 			var tzId, tzName string
