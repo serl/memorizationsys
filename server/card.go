@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -108,6 +109,10 @@ RETURNING *`,
 		c.RepetitionToday+1,
 		c.ID,
 	)
+}
+
+func (c *Card) NextRepetitionText() string {
+	return fmt.Sprintf("Next repetition scheduled in %d days (%s)", c.PreviousInterval, c.NextRepetition.Format(DateFormat))
 }
 
 func (c *Card) SendFront(userID int, keyboard interface{}) error {

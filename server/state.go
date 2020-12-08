@@ -156,6 +156,13 @@ func (s State) Show(c *Context) error {
 				),
 			)
 
+			nextRepetitionStr := card.NextRepetition.Format(DateFormat)
+			scheduledStr := ""
+			if nextRepetitionStr != time.Now().Format(DateFormat) {
+				scheduledStr = fmt.Sprintf("Rehearsal was scheduled: %s\n", nextRepetitionStr)
+			}
+			reply(fmt.Sprintf("%sPrevious interval: %d days", scheduledStr, card.PreviousInterval), keyboard)
+
 			card.SendFront(u.ID, keyboard)
 			return nil
 		}
