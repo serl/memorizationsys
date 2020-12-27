@@ -273,6 +273,8 @@ func HandleMessage(msg *tgbotapi.Message) {
 			switch msg.Text {
 			case Back:
 				return u.SetAndShowState(c, DeckDetails, &Data{DeckID: card.DeckID})
+			case SkipCard:
+				err = card.Skip(c)
 			case EditCard:
 				return u.SetAndShowState(c, CardEdit, &Data{CardID: card.ID})
 			case Difficulty0:

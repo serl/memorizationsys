@@ -1,8 +1,6 @@
 package main
 
-import (
-	"gopkg.in/telegram-bot-api.v4"
-)
+import tgbotapi "gopkg.in/telegram-bot-api.v4"
 
 const (
 	Add                        = "➕"
@@ -40,6 +38,7 @@ var (
 	CardReplyKeyboard = tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton(Back),
+			tgbotapi.NewKeyboardButton(SkipCard),
 			tgbotapi.NewKeyboardButton(EditCard),
 		),
 		tgbotapi.NewKeyboardButtonRow(
