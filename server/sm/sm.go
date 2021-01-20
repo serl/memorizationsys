@@ -63,7 +63,7 @@ func (a *algorithm) nextInterval(q, ef, repetition, interval int16) int16 {
 	case 1:
 		return 1
 	case 2:
-		return 6
+		return 3
 	default:
 		// the following corresponds to interval*easinessFactor/100, rounded to the nearest int
 		nextInterval := int64(interval) * int64(ef)
