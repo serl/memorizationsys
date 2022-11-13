@@ -55,3 +55,9 @@ Then import locally with:
 ```sh
 docker-compose exec db pg_restore --verbose --clean --no-acl --no-owner -h localhost -U postgres -d postgres /docker-entrypoint-initdb.d/latest.dump
 ```
+
+## Create a zip archive of the build
+
+```sh
+GOOS=linux GOARCH=amd64 make archive
+```

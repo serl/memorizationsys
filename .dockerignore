@@ -12,3 +12,5 @@ db/latest.dump
 server/main
 
 **/node_modules
+
+build.zip

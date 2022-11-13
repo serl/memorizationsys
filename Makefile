@@ -17,15 +17,22 @@ webapp_deps:
 	cd webapp && \
 	npm install
 
-clean: server_clean webapp_clean
+clean: server_clean webapp_clean archive_clean
 
 server_clean:
-	rm server/main
+	rm -f server/main
 
 webapp_clean:
-	rm -r webapp/build
+	rm -rf webapp/build
+
+archive_clean:
+	rm -f build.zip
 
 run: webapp_build server_run
 
 server_run: server_build
 	server/main
+
+archive: clean build
+	zip -Xj build.zip server/main
+	zip -Xr build.zip site
