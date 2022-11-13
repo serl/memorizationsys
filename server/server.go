@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -40,6 +39,7 @@ var (
 
 	Secrets struct {
 		BotToken                 string
+		WebhookSecret            string
 		PostgresConnectionString string
 		MapsAPIKey               string
 		JWTPrivateKey            *ecdsa.PrivateKey
@@ -100,6 +100,12 @@ func readSecrets() error {
 	if err != nil {
 		return err
 	}
+
+	Secrets.WebhookSecret, err = GenerateRandomString(32)
+	if err != nil {
+		return err
+	}
+
 	if Secrets.MapsAPIKey == "" {
 		return errors.New("maps_api_key is missing in secrets")
 	}
@@ -107,6 +113,7 @@ func readSecrets() error {
 	if err != nil {
 		return err
 	}
+
 	if Secrets.PostgresConnectionString == "" {
 		return errors.New("postgres_connection_string is missing in secrets")
 	}
@@ -125,17 +132,7 @@ func readSecrets() error {
 
 func createHandler() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/telegram/webhook/"+Secrets.BotToken, handleTelegramWebhook)
-	mux.HandleFunc("/telegram/register_webhook/"+Secrets.BotToken, func(w http.ResponseWriter, r *http.Request) {
-		_, err := BotAPI.SetWebhook(tgbotapi.NewWebhook(fmt.Sprintf("https://%s/telegram/webhook/%s", Configuration.Hostname, Secrets.BotToken)))
-		if err == nil {
-			log.Println("Webhook set!")
-			http.Error(w, http.StatusText(http.StatusOK), http.StatusOK)
-		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			log.Println(err)
-		}
-	})
+	mux.HandleFunc("/telegram/webhook/"+Secrets.WebhookSecret, handleTelegramWebhook)
 	if Configuration.ServeAPI {
 		mux.Handle("/api/", http.StripPrefix("/api/",
 			&jwt.Handler{
@@ -188,6 +185,12 @@ func main() {
 	}
 
 	go Poller()
+
+	if err := registerTelegramWebhook(); err == nil {
+		log.Println("Webhook set!")
+	} else {
+		log.Fatal(err)
+	}
 
 	log.Println("Starting HTTP Server on port " + Configuration.Port)
 	if err := gracehttp.Serve(httpServer); err != nil {
