@@ -24,3 +24,8 @@ server_clean:
 
 webapp_clean:
 	rm -r webapp/build
+
+run: webapp_build server_run
+
+server_run: server_build
+	server/main

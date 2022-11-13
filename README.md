@@ -32,8 +32,7 @@ You might want to use [direnv](https://direnv.net/) to ease the environment conf
 
 ```sh
 make deps
-make build
-server/main
+make run # equivalent to "make build && make server_run"
 ```
 
 ## Host on Heroku
