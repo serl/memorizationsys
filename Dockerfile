@@ -1,4 +1,4 @@
-FROM golang:1.14-alpine as gobuilder
+FROM golang:1.19-alpine as gobuilder
 
 RUN apk add --no-cache git make
 
@@ -28,7 +28,7 @@ COPY webapp ./webapp
 RUN make webapp_build
 
 
-FROM alpine as runner
+FROM alpine:3 as runner
 
 RUN apk add --no-cache curl
 
