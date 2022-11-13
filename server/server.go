@@ -68,6 +68,10 @@ func readSecrets() error {
 	Secrets.MapsAPIKey = os.Getenv("MAPS_API_KEY")
 	Secrets.PostgresConnectionString = os.Getenv("DATABASE_URL")
 
+	if Configuration.Port == "" {
+		Configuration.Port = "8000"
+	}
+
 	if os.Getenv("JWT_PRIVATE_KEY") != "" {
 		var rawKey = strings.ReplaceAll(os.Getenv("JWT_PRIVATE_KEY"), "\\n", "\n")
 		block, _ := pem.Decode([]byte(rawKey))
