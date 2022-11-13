@@ -7,7 +7,7 @@ build:
     web: Dockerfile
 run:
   web: main
-  webhook-dog:
+  wake-dog:
     command:
-      - webhook-dog.sh
+      - curl -sS "https://$HOSTNAME/"
     image: web
