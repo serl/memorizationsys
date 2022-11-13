@@ -19,7 +19,6 @@ For example, you can use something like `ngrok http 8000`.
 * Copy `.env.sample` to `.env` and follow the instructions.
 * `docker-compose up --build`.
 * You'll have your bot server listening on port 8000.
-* Register the webhook to activate the bot by visiting `http://localhost:8000/telegram/register_webhook/$BOT_TOKEN`.
 * Access the database with `docker-compose exec db psql -U postgres`.
 
 ## Host locally without Docker
@@ -33,14 +32,13 @@ You might want to use [direnv](https://direnv.net/) to ease the environment conf
 * Copy `.env.sample` to `.env` and follow the instructions. `source .env` in your terminal if you don't use direnv.
 * `make deps` to download go/js dependencies.
 * `make run` or `make build && make server_run` to compile and run the bot on port 8000.
-* Register the webhook to activate the bot by calling `server/webhook_dog`.
 
 ## Host on Heroku
 
 * You'll need the Heroku Postgres add-on.
 * Initialize the database: `{ cat db/db.sql; cat db/functions.sql; } | heroku pg:psql`
 * Take a look at `.env.sample` and do your `heroku config:set` accordingly.
-* Register the webhook to activate the bot by running `heroku run webhook-dog`. You can use the scheduler add-on to run it every morning. It will wake up the bot, so that you'll have your rehearsal, even with free dynos.
+* Use the scheduler add-on to run `wake-dog` it every morning. It will wake up the bot, so that you'll have your rehearsal, even with free dynos.
 
 ### Working with Postgres on Heroku
 

@@ -33,7 +33,6 @@ FROM alpine:3 as runner
 RUN apk add --no-cache curl
 
 COPY --from=gobuilder /app/server/main /usr/local/bin
-COPY server/webhook-dog.sh /usr/local/bin
 COPY --from=jsbuilder /app/webapp/build /site
 
 CMD ["main"]
