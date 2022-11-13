@@ -1,1 +1,6 @@
 .env
+.direnv
+
+db/latest.dump
+
+server/main

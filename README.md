@@ -12,8 +12,9 @@ Things added:
 
 ## Host locally with `docker-compose`
 
-Note: you'll need to have a HTTPS gateway for the Telegram API.
+Note: you'll need to have a public accessible HTTPS gateway for the Telegram API.
 Exposing the HTTP server as-is to the Telegram servers will NOT work.
+For example, you can use something like `ngrok http 8000`.
 
 * Copy `.env.sample` to `.env` and follow the instructions.
 * `docker-compose up --build`.
@@ -21,9 +22,22 @@ Exposing the HTTP server as-is to the Telegram servers will NOT work.
 * Register the webhook to activate the bot by visiting `http://localhost:8000/telegram/register_webhook/$BOT_TOKEN`.
 * Access the database with `docker-compose exec db psql -U postgres`.
 
+## Host locally without Docker
+
+Note: you'll need to have a public accessible HTTPS gateway for the Telegram API.
+Exposing the HTTP server as-is to the Telegram servers will NOT work.
+For example, you can use something like `ngrok http 8000`.
+
+You might want to use [direnv](https://direnv.net/) to ease the environment configuration process.
+
+* Copy `.env.sample` to `.env` and follow the instructions. `source .env` in your terminal if you don't use direnv.
+* `make deps` to download go/js dependencies.
+* `make run` or `make build && make server_run` to compile and run the bot on port 8000.
+* Register the webhook to activate the bot by calling `server/webhook_dog`.
+
 ## Host on Heroku
 
-* You'll need the Heroku Postgres add-on. The free tier should be fine.
+* You'll need the Heroku Postgres add-on.
 * Initialize the database: `{ cat db/db.sql; cat db/functions.sql; } | heroku pg:psql`
 * Take a look at `.env.sample` and do your `heroku config:set` accordingly.
 * Register the webhook to activate the bot by running `heroku run webhook-dog`. You can use the scheduler add-on to run it every morning. It will wake up the bot, so that you'll have your rehearsal, even with free dynos.
