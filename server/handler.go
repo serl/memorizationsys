@@ -2,9 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
-	"gopkg.in/telegram-bot-api.v4"
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
 func handleTelegramWebhook(w http.ResponseWriter, r *http.Request) {
@@ -29,4 +30,9 @@ func handleTelegramWebhook(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "unknown body", http.StatusBadRequest)
 		return
 	}
+}
+
+func registerTelegramWebhook() error {
+	_, err := BotAPI.SetWebhook(tgbotapi.NewWebhook(fmt.Sprintf("https://%s/telegram/webhook/%s", Configuration.Hostname, Secrets.WebhookSecret)))
+	return err
 }
