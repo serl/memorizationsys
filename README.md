@@ -23,7 +23,7 @@ Exposing the HTTP server as-is to the Telegram servers will NOT work.
 
 ## Host on Heroku
 
-* You'll need the Heroku Postgres add-on. The free tier should be fine.
+* You'll need the Heroku Postgres add-on.
 * Initialize the database: `{ cat db/db.sql; cat db/functions.sql; } | heroku pg:psql`
 * Take a look at `.env.sample` and do your `heroku config:set` accordingly.
 * Register the webhook to activate the bot by running `heroku run webhook-dog`. You can use the scheduler add-on to run it every morning. It will wake up the bot, so that you'll have your rehearsal, even with free dynos.
