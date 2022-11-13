@@ -2,6 +2,13 @@
 README.md
 .env
 .env.sample
+.envrc
+.direnv
 Dockerfile
 docker-compose.yml
+
+db/latest.dump
+
+server/main
+
 **/node_modules

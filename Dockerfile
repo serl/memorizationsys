@@ -1,35 +1,39 @@
 FROM golang:1.14-alpine as gobuilder
 
-RUN apk add --no-cache git
+RUN apk add --no-cache git make
 
 WORKDIR /app
-COPY go.mod go.sum /app/
 
-RUN go mod download -x && go mod verify
+COPY Makefile ./
 
-COPY server /app/server
+COPY go.mod go.sum ./
+RUN make server_deps
 
-RUN cd server && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o main .
+COPY server ./server
+RUN GOOS=linux make server_build
 
 
 FROM node:14-alpine as jsbuilder
 
-WORKDIR /webapp
+RUN apk add --no-cache make
 
-COPY ./webapp/package.json /webapp
-COPY ./webapp/package-lock.json /webapp
-RUN npm install
+WORKDIR /app
 
-COPY ./webapp /webapp
-RUN npm run build
+COPY Makefile ./
+
+COPY webapp/package.json webapp/package-lock.json ./webapp/
+RUN make webapp_deps
+
+COPY webapp ./webapp
+RUN make webapp_build
 
 
-FROM alpine
+FROM alpine as runner
 
 RUN apk add --no-cache curl
 
 COPY --from=gobuilder /app/server/main /usr/local/bin
 COPY server/webhook-dog.sh /usr/local/bin
-COPY --from=jsbuilder /webapp/build /site
+COPY --from=jsbuilder /app/webapp/build /site
 
 CMD ["main"]

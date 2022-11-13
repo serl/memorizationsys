@@ -12,14 +12,29 @@ Things added:
 
 ## Host locally with `docker-compose`
 
-Note: you'll need to have a HTTPS gateway for the Telegram API.
+Note: you'll need to have a public accessible HTTPS gateway for the Telegram API.
 Exposing the HTTP server as-is to the Telegram servers will NOT work.
+For example, you can use something like `ngrok http 8000`.
 
 * Copy `.env.sample` to `.env` and follow the instructions.
 * `docker-compose up --build`.
 * You'll have your bot server listening on port 8000.
 * Register the webhook to activate the bot by visiting `http://localhost:8000/telegram/register_webhook/$BOT_TOKEN`.
 * Access the database with `docker-compose exec db psql -U postgres`.
+
+## Host locally without Docker
+
+Note: you'll need to have a public accessible HTTPS gateway for the Telegram API.
+Exposing the HTTP server as-is to the Telegram servers will NOT work.
+For example, you can use something like `ngrok http 8000`.
+
+You might want to use [direnv](https://direnv.net/) to ease the environment configuration process.
+
+```sh
+make deps
+make build
+server/main
+```
 
 ## Host on Heroku
 
