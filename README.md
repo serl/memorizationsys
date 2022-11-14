@@ -29,7 +29,7 @@ For example, you can use something like `ngrok http 8000`.
 
 You might want to use [direnv](https://direnv.net/) to ease the environment configuration process.
 
-* Copy `.env.sample` to `.env` and follow the instructions. `source .env` in your terminal if you don't use direnv.
+* Copy `.env.sample` to `.env` and follow the instructions.
 * `make deps` to download go/js dependencies.
 * `make run` or `make build && make server_run` to compile and run the bot on port 8000.
 
