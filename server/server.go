@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,6 +17,7 @@ import (
 	"github.com/getsentry/sentry-go"
 	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
 	"github.com/pascaldekloe/jwt"
 	"googlemaps.github.io/maps"
@@ -25,6 +27,7 @@ import (
 var (
 	Configuration struct {
 		Hostname     string
+		IP           string
 		Port         string
 		ServeAPI     bool
 		ServeSite    bool
@@ -61,6 +64,7 @@ func readSecrets() error {
 
 	Configuration.Hostname = os.Getenv("HOSTNAME")
 	Configuration.Port = os.Getenv("PORT")
+	Configuration.IP = os.Getenv("IP")
 	Configuration.ServeAPI = os.Getenv("SERVE_API") != ""
 	Configuration.ServeSite = os.Getenv("SERVE_SITE") != ""
 	Configuration.DenyNewUsers = os.Getenv("NO_NEW_USERS") != ""
@@ -70,6 +74,9 @@ func readSecrets() error {
 
 	if Configuration.Port == "" {
 		Configuration.Port = "8000"
+	}
+	if strings.Contains(Configuration.IP, ":") {
+		Configuration.IP = fmt.Sprintf("[%s]", Configuration.IP)
 	}
 
 	if os.Getenv("JWT_PRIVATE_KEY") != "" {
@@ -180,7 +187,7 @@ func main() {
 	})
 
 	httpServer := &http.Server{
-		Addr:    ":" + Configuration.Port,
+		Addr:    fmt.Sprintf("%s:%s", Configuration.IP, Configuration.Port),
 		Handler: sentryHandler.Handle(createHandler()),
 	}
 
@@ -192,7 +199,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println("Starting HTTP Server on port " + Configuration.Port)
+	log.Println("Starting HTTP Server on " + httpServer.Addr)
 	if err := gracehttp.Serve(httpServer); err != nil {
 		log.Fatal(err)
 	}
