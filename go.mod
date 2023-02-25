@@ -14,7 +14,7 @@ require (
 	github.com/getsentry/sentry-go v0.6.0
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible // indirect
 	github.com/jmoiron/sqlx v1.2.0
-	github.com/joho/godotenv v1.4.0 // indirect
+	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.5.2
 	github.com/pascaldekloe/jwt v1.9.0
 	github.com/pkg/errors v0.9.1 // indirect
@@ -22,7 +22,7 @@ require (
 	github.com/stretchr/testify v1.5.1 // indirect
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	go.opencensus.io v0.22.3 // indirect
-	golang.org/x/net v0.0.0-20200506145744-7e3656a0809f
+	golang.org/x/net v0.7.0
 	google.golang.org/appengine v1.6.6 // indirect
 	googlemaps.github.io/maps v1.2.0
 	gopkg.in/telegram-bot-api.v4 v4.6.4
